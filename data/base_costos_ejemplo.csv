@@ -1,0 +1,19 @@
+descripcion,unidad,precio_min,precio_probable,precio_max,categoria,cantidad,merma_pct,sensible_cobre,sensible_dolar
+Cable THHN/THWN-2 12 AWG (3 -31 mm²) circuitos de enchufes y fuerza,m,680,730,1480,materiales,480,8.0,si,no
+Cable THHN/THWN-2 14 AWG (2 -08 mm²) circuitos de iluminación interior y vitrina,m,470,510,1040,materiales,360,7.0,si,no
+Cable EVA Libre de Halógenos 8 AWG (8 -37 mm²) alimentador general empalme-tablero,m,2300,2500,5100,materiales,65,6.0,si,no
+Tablero general metálico embutido 36 módulos IP55 con barras colectoras de cobre,un,142000,155000,310000,materiales,2,0.0,si,si
+Interruptores termomagnéticos 1x10A - 1x16A y 3x40A curva C 10kA (protecciones importadas SEC),un,8500,9200,18200,materiales,18,3.0,si,si
+Protectores diferenciales 2x25A y 4x40A sensibilidad 30mA clase A/AC (protecciones importadas),un,33000,36000,71000,materiales,6,2.0,si,si
+Tubería conduit acero galvanizado EMT 20 mm y 25 mm con coplas y conectores,tira 3m,4800,5200,10200,materiales,85,10.0,no,no
+Bandeja portaconductores escalerilla galvanizada 150x50 mm con soportes trapecio,m,13200,14400,28000,materiales,28,8.0,no,no
+Enchufes dobles 10/16A más tierra alveolos protegidos línea comercial + cajas,pto,7600,8200,15800,materiales,32,5.0,no,no
+Paneles Luminarias LED 60x60 cm 40W 4000K + kits de emergencia autónomos importados,un,21500,23500,45000,materiales,24,4.0,no,si
+Malla puesta a tierra cable cobre desnudo 2 AWG + 3 barras Copperweld 5/8" x 1 -5m,gl,210000,230000,485000,materiales,1,5.0,si,no
+Cajas de derivación - prensacables - rieles DIN - borneras - ferretería y cintas 3M,gl,160000,175000,340000,materiales,1,10.0,no,no
+Maestro electricista primera (montaje de tableros - cableado y conexionado),HH,130,145,310,mano_obra,1,0.0,no,no
+Ayudante eléctrico avanzado (canalización EMT - soportación y tendido),HH,145,162,345,mano_obra,1,0.0,no,no
+Ingeniero / Instalador autorizado SEC Clase A (planos As-Built y pruebas RIC),HH,22,25,55,mano_obra,1,0.0,no,no
+Medición geoeléctrica - protocolo de aislación y tramitación certificado TE1 SEC,gl,270000,295000,580000,subcontratos,1,0.0,no,no
+Arriendo de andamios modulados - ranuradora de hormigón y fletes a obra,gl,165000,180000,370000,subcontratos,1,0.0,no,no
+Contingencia por pasadas de losa ocultas - interferencias y observaciones SEC,%,3,5,21,imprevistos,1,0.0,no,no
