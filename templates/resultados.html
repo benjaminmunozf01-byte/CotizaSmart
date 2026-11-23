@@ -1,0 +1,1236 @@
+{% extends "base.html" %}
+{% block title %}Resultados Montecarlo: {{ cotizacion.nombre }} — CotizaSmart{% endblock %}
+
+{% block content %}
+<!-- Encabezado con selector de cotización, insignias de demo y botones de acción principales -->
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5">
+  <div>
+    <div class="flex flex-wrap items-center gap-2 mb-1">
+      <span class="px-2.5 py-0.5 rounded-md bg-blue-950 text-white text-xs font-bold">{{ cotizacion.codigo }}</span>
+      <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">{{ cotizacion.nombre }}</h1>
+      {% if cotizacion.es_demo or resultados.calibracion_info.es_demo %}
+      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300">
+        <i data-lucide="flask-conical" class="w-3.5 h-3.5"></i> Datos de demostración
+      </span>
+      {% endif %}
+    </div>
+    <p class="text-xs sm:text-sm text-slate-600">
+      Cliente: <strong>{{ cotizacion.cliente }}</strong> · {{ cotizacion.ciudad }} · {{ cotizacion.superficie_m2 | int }} m² ({{ cotizacion.puntos_electricos }} pts) · Simulación PERT de 10.000 escenarios ({{ resultados.resumen.tiempo_calculo_ms | dec_cl }} ms)
+    </p>
+  </div>
+
+  <!-- Botones de acción requeridos: Guardar cotización, Generar propuesta PDF, Comparar escenarios -->
+  <div class="flex flex-wrap items-center gap-2">
+    <button id="btn-comparar-escenarios" type="button" onclick="abrirComparadorEscenarios()" class="px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors">
+      <i data-lucide="git-compare" class="w-4 h-4 text-blue-900"></i>
+      <span>Comparar escenarios</span>
+    </button>
+
+    <button id="btn-guardar-cotizacion" type="button" onclick="guardarPrecioActual()" class="px-3.5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-950 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors">
+      <i data-lucide="save" class="w-4 h-4"></i>
+      <span>Guardar cotización</span>
+    </button>
+
+    <a id="btn-generar-pdf" href="{{ url_for('propuesta_comercial', cot_id=cotizacion.id) }}" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors">
+      <i data-lucide="file-text" class="w-4 h-4"></i>
+      <span>Generar propuesta PDF</span>
+    </a>
+  </div>
+</div>
+
+<!-- SEMÁFORO GRANDE DE RENTABILIDAD -->
+{% set ev = resultados.evaluacion_ofertado %}
+<div id="banner-semaforo" class="rounded-2xl p-5 mb-6 transition-all duration-200 {% if ev.semaforo == 'verde' %}semaforo-verde{% elif ev.semaforo == 'amarillo' %}semaforo-amarillo{% else %}semaforo-rojo{% endif %}">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div class="flex items-start sm:items-center gap-4">
+      <div id="icono-semaforo-box" class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm {% if ev.semaforo == 'verde' %}bg-emerald-600 text-white{% elif ev.semaforo == 'amarillo' %}bg-amber-500 text-white{% else %}bg-red-600 text-white{% endif %}">
+        <i data-lucide="shield-check" class="w-8 h-8"></i>
+      </div>
+      <div>
+        <div class="flex flex-wrap items-center gap-2 mb-0.5">
+          <span id="badge-semaforo-estado" class="text-xs font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full {% if ev.semaforo == 'verde' %}bg-emerald-200/80 text-emerald-950{% elif ev.semaforo == 'amarillo' %}bg-amber-200/80 text-amber-950{% else %}bg-red-200/80 text-red-950{% endif %}">
+            {% if ev.semaforo == 'verde' %}Semáforo Verde · Riesgo Controlado (&lt; 10%){% elif ev.semaforo == 'amarillo' %}Semáforo Amarillo · Riesgo Moderado (10% - 25%){% else %}Semáforo Rojo · Alto Riesgo de Pérdida (&gt; 25%){% endif %}
+          </span>
+          <span class="text-xs font-semibold opacity-85" id="subtexto-margen-costo">
+            Recargo sobre costo esperado: +{{ ev.margen_sobre_costo_pct | pct }}
+          </span>
+        </div>
+        <h2 id="texto-semaforo-principal" class="text-lg sm:text-xl font-extrabold leading-snug">
+          {{ ev.mensaje_semaforo }}
+        </h2>
+      </div>
+    </div>
+
+    <!-- Contraste directo Precio Ingenuo (Costo + 20%) vs Precio Óptimo -->
+    <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 bg-white/85 backdrop-blur-xs p-3 rounded-xl border border-slate-200/80 text-slate-900 shrink-0">
+      <div class="px-2.5 py-1 border-r border-slate-200">
+        <span class="text-[10px] uppercase tracking-wider font-bold text-slate-500 block">Precio Ingenuo (Costo + 20%)</span>
+        <span class="text-xs font-bold text-slate-900">{{ resultados.evaluacion_ingenuo.precio_ofertado_clp | clp }}</span>
+        <span class="inline-block ml-1 px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-100 text-amber-900">
+          {{ resultados.evaluacion_ingenuo.prob_perdida_pct | pct }} pérdida (Amarillo)
+        </span>
+      </div>
+      <div class="px-2.5 py-1">
+        <span class="text-[10px] uppercase tracking-wider font-bold text-emerald-700 block">Precio Óptimo CotizaSmart</span>
+        <span id="banner-optimo-clp" class="text-xs font-extrabold text-emerald-800">{{ resultados.evaluacion_optimo.precio_ofertado_clp | clp }}</span>
+        <span id="banner-optimo-riesgo" class="inline-block ml-1 px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-100 text-emerald-900">
+          {{ resultados.evaluacion_optimo.prob_perdida_pct | pct }} pérdida (Verde)
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 6 TARJETAS RESUMEN CON TOOLTIPS PARA CONTRATISTAS -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 mb-6">
+  <!-- 1. Costo esperado -->
+  <div class="saas-card p-4">
+    <div class="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1">
+      <span>Costo Esperado</span>
+      <span class="tooltip-wrapper text-slate-400">
+        <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+        <span class="tooltip-box">Promedio de los 10.000 escenarios de costo total (materiales con merma + mano de obra + imprevistos + gastos generales).</span>
+      </span>
+    </div>
+    <p id="card-costo-esperado" class="text-lg font-extrabold text-slate-900">{{ resultados.resumen.costo_esperado_clp | clp }}</p>
+    <span class="text-[11px] text-slate-500">Directo + indirecto</span>
+  </div>
+
+  <!-- 2. Costo P80 -->
+  <div class="saas-card p-4">
+    <div class="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1">
+      <span>Costo P80</span>
+      <span class="tooltip-wrapper text-slate-400">
+        <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+        <span class="tooltip-box">Escenario pesimista prudente: en 8 de cada 10 casos posibles la obra costará este monto o menos.</span>
+      </span>
+    </div>
+    <p id="card-costo-p80" class="text-lg font-extrabold text-amber-800">{{ resultados.resumen.costo_p80_clp | clp }}</p>
+    <span class="text-[11px] text-slate-500">Cubre 80% de casos</span>
+  </div>
+
+  <!-- 3. Punto de equilibrio -->
+  <div class="saas-card p-4">
+    <div class="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1">
+      <span>Pto. Equilibrio</span>
+      <span class="tooltip-wrapper text-slate-400">
+        <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+        <span class="tooltip-box">Precio neto donde en promedio solo cubres los costos de la obra sin dejar utilidad para la empresa.</span>
+      </span>
+    </div>
+    <p id="card-equilibrio" class="text-lg font-extrabold text-slate-700">{{ resultados.resumen.punto_equilibrio_clp | clp }}</p>
+    <span class="text-[11px] text-slate-500">Utilidad esperada $0</span>
+  </div>
+
+  <!-- 4. Precio mínimo seguro -->
+  <div class="saas-card p-4 border-emerald-200 bg-emerald-50/30">
+    <div class="flex items-center justify-between text-xs font-semibold text-emerald-900 mb-1">
+      <span>Mínimo Seguro</span>
+      <span class="tooltip-wrapper text-emerald-700">
+        <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+        <span class="tooltip-box">El precio más bajo que puedes cobrar manteniendo la probabilidad de perder plata en 10% o menos (entrada a Zona Verde).</span>
+      </span>
+    </div>
+    <p id="card-min-seguro" class="text-lg font-extrabold text-emerald-800">{{ resultados.resumen.precio_min_seguro_clp | clp }}</p>
+    <span class="text-[11px] text-emerald-700">Riesgo pérdida &le; 10%</span>
+  </div>
+
+  <!-- 5. Precio óptimo recomendado -->
+  <div class="saas-card p-4 border-blue-300 bg-blue-50/40">
+    <div class="flex items-center justify-between text-xs font-bold text-blue-950 mb-1">
+      <span>Precio Óptimo</span>
+      <span class="tooltip-wrapper text-blue-800">
+        <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+        <span class="tooltip-box">Precio que maximiza la ganancia esperada (Probabilidad de adjudicar × Margen esperado). Es la recomendación estrella de CotizaSmart.</span>
+      </span>
+    </div>
+    <p id="card-precio-optimo" class="text-lg font-extrabold text-blue-950">{{ resultados.resumen.precio_optimo_clp | clp }}</p>
+    <span id="card-optimo-pct" class="text-[11px] font-semibold text-blue-800">+{{ resultados.evaluacion_optimo.margen_sobre_costo_pct | pct }} s/costo</span>
+  </div>
+
+  <!-- 6. Probabilidad de pérdida -->
+  <div class="saas-card p-4">
+    <div class="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1">
+      <span>Prob. de Pérdida</span>
+      <span class="tooltip-wrapper text-slate-400">
+        <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+        <span class="tooltip-box">Porcentaje de los 10.000 escenarios simulados donde el costo real termina superando el precio ofertado actual.</span>
+      </span>
+    </div>
+    <p id="card-prob-perdida" class="text-lg font-extrabold {% if ev.prob_perdida_pct < 10 %}text-emerald-700{% elif ev.prob_perdida_pct <= 25 %}text-amber-700{% else %}text-red-700{% endif %}">
+      {{ ev.prob_perdida_pct | pct }}
+    </p>
+    <span id="card-prob-ganar-licitacion" class="text-[11px] text-slate-500">Prob. ganar licit.: {{ ev.prob_ganar_licitacion_pct | pct }}</span>
+  </div>
+</div>
+
+<!-- BARRA INTERACTIVA DE ESCENARIO DE MERCADO (COBRE, DÓLAR Y CALIBRACIÓN CSV EN VIVO) -->
+<div class="saas-card p-4 mb-6 bg-slate-900 text-white">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+    <div class="lg:col-span-3">
+      <span class="text-[11px] uppercase tracking-wider font-bold text-emerald-400 block">Simulador de Estrés en Vivo</span>
+      <h3 class="text-sm font-bold">Ajuste Cobre, Dólar y Competencia</h3>
+      <p class="text-[11px] text-slate-300">Mueve los sliders para recalcular los 10.000 escenarios</p>
+    </div>
+
+    <!-- Slider Cobre en vivo -->
+    <div class="lg:col-span-3">
+      <div class="flex justify-between text-xs font-semibold mb-1">
+        <span class="text-slate-300">Variación Cobre:</span>
+        <span id="live-lbl-cobre" class="text-amber-400 font-bold">{{ cotizacion.var_cobre | pct }}</span>
+      </div>
+      <input id="live-slider-cobre" type="range" min="-20" max="30" step="1" value="{{ cotizacion.var_cobre }}" class="w-full saas-slider" onchange="recalcularSimulacionEnVivo()" oninput="document.getElementById('live-lbl-cobre').textContent = (this.value > 0 ? '+' : '') + this.value + ',0%'" />
+    </div>
+
+    <!-- Slider Dólar en vivo -->
+    <div class="lg:col-span-3">
+      <div class="flex justify-between text-xs font-semibold mb-1">
+        <span class="text-slate-300">Variación Dólar:</span>
+        <span id="live-lbl-dolar" class="text-blue-300 font-bold">{{ cotizacion.var_dolar | pct }}</span>
+      </div>
+      <input id="live-slider-dolar" type="range" min="-10" max="15" step="1" value="{{ cotizacion.var_dolar }}" class="w-full saas-slider" onchange="recalcularSimulacionEnVivo()" oninput="document.getElementById('live-lbl-dolar').textContent = (this.value > 0 ? '+' : '') + this.value + ',0%'" />
+    </div>
+
+    <!-- Selector / Carga rápida CSV Competencia -->
+    <div class="lg:col-span-3 flex flex-col gap-1.5">
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] text-slate-300 font-semibold">Curva de Competencia:</span>
+        <label class="text-[11px] text-emerald-400 hover:underline cursor-pointer font-bold flex items-center gap-1">
+          <i data-lucide="upload" class="w-3 h-3"></i> Subir CSV
+          <input type="file" accept=".csv" class="hidden" onchange="subirCSVEnResultados(this)" />
+        </label>
+      </div>
+      <select id="live-sel-calibracion" onchange="recalcularSimulacionEnVivo()" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white font-medium">
+        <option value="0" {% if not cotizacion.calibracion_id %}selected{% endif %}>Curva genérica (Costo × 1,25)</option>
+        {% for ds in datasets_calibracion %}
+        <option value="{{ ds.id }}" {% if cotizacion.calibracion_id == ds.id %}selected{% endif %}>
+          [{{ ds.tipo | upper }}] {{ ds.nombre }} ({{ ds.n_registros }})
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- SECCIÓN PROTAGONISTA: CURVA DE PRECIO ÓPTIMO + SLIDER EN TIEMPO REAL -->
+<div class="saas-card p-6 mb-6">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
+    <div>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 text-[11px] font-extrabold uppercase">Protagonista</span>
+        <h2 class="text-lg font-extrabold text-slate-900">Curva de Precio Óptimo y Maximización de Ganancia Esperada</h2>
+      </div>
+      <p class="text-xs text-slate-600 mt-0.5">
+        Cruza la probabilidad de adjudicar la licitación contra el margen esperado para encontrar el punto exacto que maximiza tu utilidad esperada.
+      </p>
+    </div>
+
+    <!-- Aviso de curva de calibración usada -->
+    <div class="flex flex-col items-end gap-1.5">
+      <div id="badge-info-calibracion" class="px-3 py-1.5 rounded-xl border text-xs font-medium flex items-center gap-2 {% if resultados.calibracion_info.es_generica %}bg-amber-50 border-amber-200 text-amber-900{% else %}bg-emerald-50 border-emerald-200 text-emerald-900{% endif %}">
+        <i data-lucide="info" class="w-4 h-4 shrink-0"></i>
+        <span id="texto-info-calibracion">{{ resultados.calibracion_info.descripcion }}</span>
+      </div>
+      <div id="banner-aviso-tamano" class="{% if not resultados.calibracion_info.aviso_tamano %}hidden{% endif %} px-3 py-1.5 rounded-xl bg-amber-100 border border-amber-300 text-amber-950 text-xs font-bold flex items-center gap-1.5">
+        <i data-lucide="alert-triangle" class="w-3.5 h-3.5 shrink-0"></i>
+        <span id="texto-aviso-tamano">{{ resultados.calibracion_info.aviso_tamano or 'Los precios no se normalizaron por tamaño; úsalos solo con obras de monto similar' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráfico Curva de Precio Óptimo -->
+  <div class="h-80 sm:h-96 w-full relative mb-5">
+    <canvas id="chartCurvaOptima"></canvas>
+  </div>
+
+  <!-- Panel del Slider interactivo de Precio Ofertado -->
+  <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <label for="slider-precio-ofertado" class="text-xs font-bold uppercase tracking-wider text-blue-900 block">
+          Mueve el Precio Ofertado para simular decisiones en tiempo real
+        </label>
+        <div class="flex items-baseline gap-3 mt-1">
+          <span id="lbl-precio-ofertado-actual" class="text-2xl sm:text-3xl font-extrabold text-slate-900">
+            {{ ev.precio_ofertado_clp | clp }}
+          </span>
+          <span class="text-xs font-semibold text-slate-500">
+            Neto (+ IVA 19% = <strong id="lbl-precio-con-iva" class="text-slate-800">{{ (ev.precio_ofertado_clp * 1.19) | clp }}</strong>)
+          </span>
+        </div>
+      </div>
+
+      <!-- Botones rápidos de comparación -->
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" onclick="fijarPrecioEnSlider('ingenuo')" class="px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 text-xs font-bold transition-colors">
+          Probar Ingenuo Costo + 20% (<span id="btn-lbl-ingenuo">{{ resultados.resumen.precio_ingenuo_clp | clp }}</span>)
+        </button>
+        <button type="button" onclick="fijarPrecioEnSlider('seguro')" class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-bold transition-colors">
+          Mínimo Seguro (<span id="btn-lbl-seguro">{{ resultados.resumen.precio_min_seguro_clp | clp }}</span>)
+        </button>
+        <button type="button" onclick="fijarPrecioEnSlider('optimo')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition-colors">
+          Usar Precio Óptimo (<span id="btn-lbl-optimo">{{ resultados.resumen.precio_optimo_clp | clp }}</span>)
+        </button>
+      </div>
+    </div>
+
+    {% set p_min_slider = resultados.curva_precio_optimo.precios_clp[0] %}
+    {% set p_max_slider = resultados.curva_precio_optimo.precios_clp[-1] %}
+    <input
+      id="slider-precio-ofertado"
+      type="range"
+      min="{{ p_min_slider }}"
+      max="{{ p_max_slider }}"
+      step="10000"
+      value="{{ ev.precio_ofertado_clp }}"
+      class="w-full saas-slider"
+      oninput="actualizarPrecioDesdeSlider(this.value)"
+    />
+
+    <!-- Indicadores en tiempo real debajo del slider -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+      <div class="p-3 rounded-xl bg-white border border-slate-200">
+        <span class="text-[11px] text-slate-500 font-semibold block">Prob. Ganar Licitación</span>
+        <span id="live-prob-win" class="text-base font-extrabold text-blue-900">{{ ev.prob_ganar_licitacion_pct | pct }}</span>
+      </div>
+      <div class="p-3 rounded-xl bg-white border border-slate-200">
+        <span class="text-[11px] text-slate-500 font-semibold block">Prob. de Pérdida (Riesgo)</span>
+        <span id="live-prob-loss" class="text-base font-extrabold {% if ev.prob_perdida_pct < 10 %}text-emerald-700{% elif ev.prob_perdida_pct <= 25 %}text-amber-700{% else %}text-red-700{% endif %}">
+          {{ ev.prob_perdida_pct | pct }}
+        </span>
+      </div>
+      <div class="p-3 rounded-xl bg-white border border-slate-200">
+        <span class="text-[11px] text-slate-500 font-semibold block">Margen Esperado si Gana</span>
+        <span id="live-margen-clp" class="text-base font-extrabold text-slate-900">{{ ev.margen_esperado_clp | clp }}</span>
+      </div>
+      <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+        <span class="text-[11px] text-emerald-800 font-bold block">Ganancia Esperada Total</span>
+        <span id="live-ganancia-esp" class="text-base font-extrabold text-emerald-900">{{ ev.ganancia_esperada_clp | clp }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FILA INTERMEDIA: HISTOGRAMA DE COSTO SIMULADO + DESGLOSE DIRECTOS VS INDIRECTOS -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+  <!-- Histograma de distribución de costo total simulado -->
+  <div class="saas-card p-6 lg:col-span-7 flex flex-col justify-between">
+    <div>
+      <div class="flex items-center justify-between mb-1">
+        <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+          <span>Distribución de Costo Total Simulado (10.000 Escenarios)</span>
+          <span class="tooltip-wrapper text-slate-400">
+            <i data-lucide="help-circle" class="w-4 h-4"></i>
+            <span class="tooltip-box">Muestra qué tan frecuentes son los distintos costos totales posibles de la obra. Las líneas verticales marcan el costo esperado (P50), el escenario prudente (P80) y tu precio ofertado.</span>
+          </span>
+        </h2>
+      </div>
+      <p class="text-xs text-slate-500 mb-4">
+        Líneas verticales: <span class="font-bold text-blue-800">Costo P50</span> · <span class="font-bold text-amber-600">Costo P80</span> · <span class="font-bold text-emerald-700">Precio Ofertado</span>
+      </p>
+    </div>
+
+    <div class="h-72 w-full relative">
+      <canvas id="chartHistograma"></canvas>
+    </div>
+  </div>
+
+  <!-- Desglose de costos directos vs indirectos (Dona + Resumen) -->
+  <div class="saas-card p-6 lg:col-span-5 flex flex-col justify-between">
+    <div>
+      <h2 class="text-base font-extrabold text-slate-900 mb-1">Estructura de Costos Directos vs Indirectos</h2>
+      <p class="text-xs text-slate-500 mb-4">
+        Participación esperada por categoría sobre el costo total ({{ resultados.resumen.costo_esperado_clp | clp }})
+      </p>
+    </div>
+
+    <div class="h-56 w-full relative mb-4">
+      <canvas id="chartDesglose"></canvas>
+    </div>
+
+    <div class="grid grid-cols-2 gap-2.5 text-xs">
+      <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+        <span class="text-slate-600 font-medium">Costos Directos:</span>
+        <strong id="lbl-costo-directo-esp" class="text-slate-900">{{ resultados.resumen.costo_directo_esperado_clp | clp }}</strong>
+      </div>
+      <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+        <span class="text-slate-600 font-medium">Indirectos (GG):</span>
+        <strong id="lbl-costo-indirecto-esp" class="text-slate-900">{{ resultados.resumen.costo_indirecto_esperado_clp | clp }}</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DIAGRAMA DE TORNADO Y TABLA DE APORTE AL COSTO Y AL RIESGO -->
+<div class="saas-card p-6 mb-6">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-5">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-900 text-[11px] font-extrabold uppercase">Diagnóstico de Incertidumbre</span>
+        <h2 class="text-lg font-extrabold text-slate-900">Diagrama de Tornado: Partidas que Más Riesgo Generan</h2>
+      </div>
+      <p class="text-xs text-slate-600 mt-0.5">
+        Ranking de las partidas críticas según su oscilación entre escenario favorable (P10) y adverso (P90) y su contribución a la varianza total.
+      </p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <!-- Gráfico de Tornado (Top 8 partidas) -->
+    <div class="lg:col-span-5 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-600 mb-3">
+        Top 8 Partidas por Amplitud de Incertidumbre (P10 a P90 en CLP)
+      </h3>
+      <div class="h-80 w-full relative">
+        <canvas id="chartTornado"></canvas>
+      </div>
+    </div>
+
+    <!-- Tabla completa de aporte al costo y al riesgo -->
+    <div class="lg:col-span-7 overflow-x-auto border border-slate-200 rounded-xl max-h-96">
+      <table class="w-full text-left border-collapse">
+        <thead class="sticky top-0 bg-slate-100 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+          <tr>
+            <th class="py-2.5 px-3">#</th>
+            <th class="py-2.5 px-3">Partida</th>
+            <th class="py-2.5 px-3 text-right">Costo Esperado</th>
+            <th class="py-2.5 px-3 text-right">% Costo</th>
+            <th class="py-2.5 px-3 text-right">Rango P10 - P90</th>
+            <th class="py-2.5 px-3 text-right">Aporte al Riesgo</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-ranking-riesgo" class="divide-y divide-slate-200 text-xs">
+          {% for item in resultados.ranking_riesgo %}
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-3 font-bold text-slate-500">{{ loop.index }}</td>
+            <td class="py-2.5 px-3">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="font-semibold text-slate-900">{{ item.descripcion }}</span>
+                {% if item.sensible_cobre %}
+                <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-100 text-amber-900">Cobre</span>
+                {% endif %}
+                {% if item.sensible_dolar %}
+                <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-100 text-blue-900">Dólar</span>
+                {% endif %}
+              </div>
+              <span class="text-[11px] text-slate-500 capitalize">{{ item.categoria | replace('_', ' ') }}</span>
+            </td>
+            <td class="py-2.5 px-3 text-right font-semibold text-slate-900 whitespace-nowrap">
+              {{ item.costo_esperado_clp | clp }}
+            </td>
+            <td class="py-2.5 px-3 text-right text-slate-600 whitespace-nowrap">
+              {{ item.aporte_costo_pct | pct }}
+            </td>
+            <td class="py-2.5 px-3 text-right text-slate-600 whitespace-nowrap">
+              &plusmn;{{ (item.amplitud_riesgo_clp / 2) | clp }}
+            </td>
+            <td class="py-2.5 px-3 text-right whitespace-nowrap">
+              <div class="flex items-center justify-end gap-2">
+                <div class="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <div class="h-full bg-blue-900 rounded-full" style="width: {{ [item.aporte_riesgo_pct * 2.5, 100] | min }}%"></div>
+                </div>
+                <span class="font-bold text-blue-950 w-11 text-right">{{ item.aporte_riesgo_pct | pct }}</span>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMPARADOR DE ESCENARIOS -->
+<div id="modal-comparar-escenarios" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-comparador" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-3xl w-full overflow-hidden">
+    <div class="bg-slate-900 px-6 py-4 text-white flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <i data-lucide="git-compare" class="w-5 h-5 text-emerald-400"></i>
+        <h3 id="titulo-modal-comparador" class="text-base font-bold">Comparador de Escenarios de Precio y Mercado</h3>
+      </div>
+      <button id="btn-cerrar-comparador-x" type="button" onclick="cerrarComparadorEscenarios()" class="text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <div class="p-6 space-y-4">
+      <p class="text-xs text-slate-600">
+        Comparación ejecutiva para la toma de decisión: evalúa cómo cambia la rentabilidad entre el criterio tradicional, la recomendación óptima de CotizaSmart y un shock alcista de Cobre (+15%) y Dólar (+8%).
+      </p>
+
+      <div class="overflow-x-auto border border-slate-200 rounded-xl">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-100 border-b border-slate-200 font-bold text-slate-700">
+              <th class="py-3 px-4">Métrica Clave</th>
+              <th class="py-3 px-4 bg-amber-50/60">1. Criterio Tradicional (Costo + 20%)</th>
+              <th class="py-3 px-4 bg-emerald-50/70">2. Precio Óptimo CotizaSmart</th>
+              <th class="py-3 px-4">3. Tu Precio Ofertado Actual</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <tr>
+              <td class="py-3 px-4 font-semibold text-slate-700">Precio Neto Ofertado</td>
+              <td id="cmp-ingenuo-precio" class="py-3 px-4 font-bold text-slate-900">{{ resultados.evaluacion_ingenuo.precio_ofertado_clp | clp }}</td>
+              <td id="cmp-optimo-precio" class="py-3 px-4 font-extrabold text-emerald-800">{{ resultados.evaluacion_optimo.precio_ofertado_clp | clp }}</td>
+              <td id="cmp-actual-precio" class="py-3 px-4 font-bold text-blue-950">{{ ev.precio_ofertado_clp | clp }}</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 font-semibold text-slate-700">Probabilidad de Pérdida</td>
+              <td id="cmp-ingenuo-perdida" class="py-3 px-4 font-bold text-amber-800">{{ resultados.evaluacion_ingenuo.prob_perdida_pct | pct }} (Amarillo)</td>
+              <td id="cmp-optimo-perdida" class="py-3 px-4 font-bold text-emerald-700">{{ resultados.evaluacion_optimo.prob_perdida_pct | pct }} (Verde)</td>
+              <td id="cmp-actual-perdida" class="py-3 px-4 font-bold">{{ ev.prob_perdida_pct | pct }}</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 font-semibold text-slate-700">Prob. Ganar Licitación</td>
+              <td id="cmp-ingenuo-win" class="py-3 px-4">{{ resultados.evaluacion_ingenuo.prob_ganar_licitacion_pct | pct }}</td>
+              <td id="cmp-optimo-win" class="py-3 px-4">{{ resultados.evaluacion_optimo.prob_ganar_licitacion_pct | pct }}</td>
+              <td id="cmp-actual-win" class="py-3 px-4">{{ ev.prob_ganar_licitacion_pct | pct }}</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 font-semibold text-slate-700">Margen Esperado si Gana</td>
+              <td id="cmp-ingenuo-margen" class="py-3 px-4">{{ resultados.evaluacion_ingenuo.margen_esperado_clp | clp }}</td>
+              <td id="cmp-optimo-margen" class="py-3 px-4 font-semibold text-emerald-800">{{ resultados.evaluacion_optimo.margen_esperado_clp | clp }}</td>
+              <td id="cmp-actual-margen" class="py-3 px-4">{{ ev.margen_esperado_clp | clp }}</td>
+            </tr>
+            <tr class="bg-slate-50">
+              <td class="py-3 px-4 font-extrabold text-slate-900">Ganancia Esperada Total</td>
+              <td id="cmp-ingenuo-ganancia" class="py-3 px-4 font-bold text-slate-800">{{ resultados.evaluacion_ingenuo.ganancia_esperada_clp | clp }}</td>
+              <td id="cmp-optimo-ganancia" class="py-3 px-4 font-extrabold text-emerald-700">{{ resultados.evaluacion_optimo.ganancia_esperada_clp | clp }}</td>
+              <td id="cmp-actual-ganancia" class="py-3 px-4 font-extrabold text-blue-950">{{ ev.ganancia_esperada_clp | clp }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
+        <button type="button" onclick="simularShockCobreDolar()" class="px-3.5 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 text-xs font-bold flex items-center gap-1.5">
+          <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+          <span>Probar Shock Alcista (Cobre +15% y Dólar +8%)</span>
+        </button>
+        <button id="btn-cerrar-comparador" type="button" onclick="cerrarComparadorEscenarios()" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold">
+          Cerrar comparador
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const COT_ID = {{ cotizacion.id }};
+  let estadoResultados = {{ resultados | tojson }};
+  let precioSeleccionado = Number(estadoResultados.evaluacion_ofertado.precio_ofertado_clp);
+
+  let chartOptima = null;
+  let chartHist = null;
+  let chartDonut = null;
+  let chartTornado = null;
+
+  /**
+   * Calcula en el navegador (en < 1 ms) la probabilidad de pérdida, probabilidad de ganar
+   * y ganancia esperada para cualquier precio del slider usando la curva y cuantiles simulados.
+   */
+  function evaluarPrecioInstantaneo(precio) {
+    const p = Number(precio);
+    const costoEsp = Number(estadoResultados.resumen.costo_esperado_clp);
+    const cuantiles = estadoResultados.cuantiles_costo_clp || [];
+
+    // 1. Probabilidad de pérdida interpolando sobre los 201 cuantiles (paso 0.5%)
+    let probSuperado = 0;
+    if (cuantiles.length > 1) {
+      if (p <= cuantiles[0]) {
+        probSuperado = 100.0;
+      } else if (p >= cuantiles[cuantiles.length - 1]) {
+        probSuperado = 0.0;
+      } else {
+        let idx = 0;
+        while (idx < cuantiles.length - 1 && cuantiles[idx + 1] < p) {
+          idx++;
+        }
+        const c0 = cuantiles[idx];
+        const c1 = cuantiles[idx + 1];
+        const frac = c1 > c0 ? (p - c0) / (c1 - c0) : 0;
+        const percentil = (idx + frac) * (100.0 / (cuantiles.length - 1));
+        probSuperado = Math.max(0, Math.min(100, 100.0 - percentil));
+      }
+    }
+
+    // 2. Probabilidad de ganar licitación interpolando sobre la grilla de 100 precios
+    const grillaP = estadoResultados.curva_precio_optimo.precios_clp;
+    const grillaWin = estadoResultados.curva_precio_optimo.prob_ganar_pct;
+    let probWinPct = 50.0;
+    if (p <= grillaP[0]) {
+      probWinPct = grillaWin[0];
+    } else if (p >= grillaP[grillaP.length - 1]) {
+      probWinPct = grillaWin[grillaP.length - 1];
+    } else {
+      let j = 0;
+      while (j < grillaP.length - 1 && grillaP[j + 1] < p) {
+        j++;
+      }
+      const p0 = grillaP[j];
+      const p1 = grillaP[j + 1];
+      const t = p1 > p0 ? (p - p0) / (p1 - p0) : 0;
+      probWinPct = grillaWin[j] + t * (grillaWin[j + 1] - grillaWin[j]);
+    }
+
+    const margenCLP = p - costoEsp;
+    const gananciaEspCLP = (probWinPct / 100.0) * margenCLP;
+    const margenSobreCostoPct = ((p - costoEsp) / Math.max(costoEsp, 1)) * 100.0;
+    const probGanarDinero = 100.0 - probSuperado;
+
+    let semaforo = "verde";
+    let mensaje = `Con este precio hay ${CotizaSmart.formatoPct(probGanarDinero)} de probabilidad de ganar dinero (riesgo de pérdida bajo: ${CotizaSmart.formatoPct(probSuperado)}).`;
+    if (probSuperado >= 10.0 && probSuperado <= 25.0) {
+      semaforo = "amarillo";
+      mensaje = `Precaución: con este precio hay ${CotizaSmart.formatoPct(probGanarDinero)} de probabilidad de ganar dinero y un riesgo moderado de pérdida de ${CotizaSmart.formatoPct(probSuperado)}.`;
+    } else if (probSuperado > 25.0) {
+      semaforo = "rojo";
+      mensaje = `Alerta de sobrecosto: con este precio hay ${CotizaSmart.formatoPct(probSuperado)} de probabilidad de perder plata (solo ${CotizaSmart.formatoPct(probGanarDinero)} de salir con ganancia).`;
+    }
+
+    return {
+      precio_ofertado_clp: Math.round(p),
+      prob_perdida_pct: probSuperado,
+      prob_ganar_dinero_pct: probGanarDinero,
+      prob_ganar_licitacion_pct: probWinPct,
+      margen_esperado_clp: Math.round(margenCLP),
+      margen_sobre_costo_pct: margenSobreCostoPct,
+      ganancia_esperada_clp: Math.round(gananciaEspCLP),
+      semaforo,
+      mensaje_semaforo: mensaje,
+    };
+  }
+
+  function actualizarPrecioDesdeSlider(nuevoValor) {
+    precioSeleccionado = Number(nuevoValor);
+    const ev = evaluarPrecioInstantaneo(precioSeleccionado);
+
+    // Actualizar textos del slider
+    document.getElementById("lbl-precio-ofertado-actual").textContent = CotizaSmart.formatoCLP(ev.precio_ofertado_clp);
+    document.getElementById("lbl-precio-con-iva").textContent = CotizaSmart.formatoCLP(ev.precio_ofertado_clp * 1.19);
+    document.getElementById("live-prob-win").textContent = CotizaSmart.formatoPct(ev.prob_ganar_licitacion_pct);
+
+    const elLoss = document.getElementById("live-prob-loss");
+    elLoss.textContent = CotizaSmart.formatoPct(ev.prob_perdida_pct);
+    elLoss.className = `text-base font-extrabold ${
+      ev.prob_perdida_pct < 10 ? "text-emerald-700" : ev.prob_perdida_pct <= 25 ? "text-amber-700" : "text-red-700"
+    }`;
+
+    document.getElementById("live-margen-clp").textContent = CotizaSmart.formatoCLP(ev.margen_esperado_clp);
+    document.getElementById("live-ganancia-esp").textContent = CotizaSmart.formatoCLP(ev.ganancia_esperada_clp);
+
+    // Actualizar tarjeta 6
+    const cardLoss = document.getElementById("card-prob-perdida");
+    cardLoss.textContent = CotizaSmart.formatoPct(ev.prob_perdida_pct);
+    cardLoss.className = `text-lg font-extrabold ${
+      ev.prob_perdida_pct < 10 ? "text-emerald-700" : ev.prob_perdida_pct <= 25 ? "text-amber-700" : "text-red-700"
+    }`;
+    document.getElementById("card-prob-ganar-licitacion").textContent =
+      `Prob. ganar licit.: ${CotizaSmart.formatoPct(ev.prob_ganar_licitacion_pct)}`;
+
+    // Actualizar semáforo grande
+    const banner = document.getElementById("banner-semaforo");
+    const iconBox = document.getElementById("icono-semaforo-box");
+    const badgeEstado = document.getElementById("badge-semaforo-estado");
+    document.getElementById("texto-semaforo-principal").textContent = ev.mensaje_semaforo;
+    document.getElementById("subtexto-margen-costo").textContent =
+      `Recargo sobre costo esperado: ${ev.margen_sobre_costo_pct >= 0 ? "+" : ""}${CotizaSmart.formatoPct(ev.margen_sobre_costo_pct)}`;
+
+    if (ev.semaforo === "verde") {
+      banner.className = "rounded-2xl p-5 mb-6 transition-all duration-200 semaforo-verde";
+      iconBox.className = "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm bg-emerald-600 text-white";
+      badgeEstado.className = "text-xs font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-200/80 text-emerald-950";
+      badgeEstado.textContent = "Semáforo Verde · Riesgo Controlado (< 10%)";
+    } else if (ev.semaforo === "amarillo") {
+      banner.className = "rounded-2xl p-5 mb-6 transition-all duration-200 semaforo-amarillo";
+      iconBox.className = "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm bg-amber-500 text-white";
+      badgeEstado.className = "text-xs font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-200/80 text-amber-950";
+      badgeEstado.textContent = "Semáforo Amarillo · Riesgo Moderado (10% - 25%)";
+    } else {
+      banner.className = "rounded-2xl p-5 mb-6 transition-all duration-200 semaforo-rojo";
+      iconBox.className = "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm bg-red-600 text-white";
+      badgeEstado.className = "text-xs font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-red-200/80 text-red-950";
+      badgeEstado.textContent = "Semáforo Rojo · Alto Riesgo de Pérdida (> 25%)";
+    }
+
+    // Actualizar tabla del comparador
+    document.getElementById("cmp-actual-precio").textContent = CotizaSmart.formatoCLP(ev.precio_ofertado_clp);
+    document.getElementById("cmp-actual-perdida").textContent = CotizaSmart.formatoPct(ev.prob_perdida_pct);
+    document.getElementById("cmp-actual-win").textContent = CotizaSmart.formatoPct(ev.prob_ganar_licitacion_pct);
+    document.getElementById("cmp-actual-margen").textContent = CotizaSmart.formatoCLP(ev.margen_esperado_clp);
+    document.getElementById("cmp-actual-ganancia").textContent = CotizaSmart.formatoCLP(ev.ganancia_esperada_clp);
+
+    // Redibujar líneas verticales en Curva Óptima e Histograma
+    if (chartOptima) chartOptima.update("none");
+    if (chartHist) chartHist.update("none");
+  }
+
+  function fijarPrecioEnSlider(modo) {
+    let objetivo = estadoResultados.resumen.precio_optimo_clp;
+    if (modo === "ingenuo") {
+      objetivo = estadoResultados.resumen.precio_ingenuo_clp;
+    } else if (modo === "seguro") {
+      objetivo = estadoResultados.resumen.precio_min_seguro_clp;
+    }
+    const slider = document.getElementById("slider-precio-ofertado");
+    slider.value = objetivo;
+    actualizarPrecioDesdeSlider(objetivo);
+  }
+
+  // Plugin Chart.js para dibujar líneas verticales de referencia en Curva Óptima e Histograma
+  const pluginLineasVerticales = {
+    id: "lineasVerticalesCotizaSmart",
+    afterDatasetsDraw(chart, args, pluginOptions) {
+      if (!pluginOptions || !pluginOptions.lineas) return;
+      const { ctx, chartArea, scales } = chart;
+      const xScale = scales.x;
+      if (!xScale) return;
+
+      pluginOptions.lineas.forEach((linea) => {
+        const valorX = typeof linea.obtenerValor === "function" ? linea.obtenerValor() : linea.valor;
+        let xPixel = null;
+
+        if (xScale.type === "linear") {
+          xPixel = xScale.getPixelForValue(valorX);
+        } else {
+          // Escala categórica: interpolar posición entre etiquetas numéricas
+          const valoresEje = linea.valoresEje || [];
+          if (!valoresEje.length) return;
+          let idx = 0;
+          while (idx < valoresEje.length - 1 && valoresEje[idx + 1] < valorX) {
+            idx++;
+          }
+          const v0 = valoresEje[idx];
+          const v1 = valoresEje[Math.min(idx + 1, valoresEje.length - 1)];
+          const frac = v1 > v0 ? Math.max(0, Math.min(1, (valorX - v0) / (v1 - v0))) : 0;
+          const p0 = xScale.getPixelForValue(idx);
+          const p1 = xScale.getPixelForValue(Math.min(idx + 1, valoresEje.length - 1));
+          xPixel = p0 + frac * (p1 - p0);
+        }
+
+        if (xPixel === null || xPixel < chartArea.left || xPixel > chartArea.right) return;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.strokeStyle = linea.color || "#0f172a";
+        ctx.lineWidth = linea.grosor || 2;
+        if (linea.punteada) ctx.setLineDash([5, 4]);
+        ctx.moveTo(xPixel, chartArea.top);
+        ctx.lineTo(xPixel, chartArea.bottom);
+        ctx.stroke();
+
+        if (linea.etiqueta) {
+          ctx.font = "bold 10px Inter, sans-serif";
+          const txt = linea.etiqueta;
+          const tw = ctx.measureText(txt).width + 10;
+          const yPos = chartArea.top + (linea.offsetY || 8);
+          const xBox = Math.min(Math.max(xPixel - tw / 2, chartArea.left + 2), chartArea.right - tw - 2);
+
+          ctx.fillStyle = linea.color || "#0f172a";
+          ctx.beginPath();
+          ctx.roundRect(xBox, yPos, tw, 18, 4);
+          ctx.fill();
+
+          ctx.fillStyle = "#ffffff";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(txt, xBox + tw / 2, yPos + 9);
+        }
+        ctx.restore();
+      });
+    },
+  };
+
+  Chart.register(pluginLineasVerticales);
+
+  function construirGraficos() {
+    const curva = estadoResultados.curva_precio_optimo;
+    const preciosCurva = curva.precios_clp;
+    const idxOpt = curva.indice_optimo;
+
+    // Punto destacado únicamente en el precio óptimo
+    const radiosOptimo = preciosCurva.map((_, i) => (i === idxOpt ? 8 : 0));
+    const coloresPuntoOpt = preciosCurva.map((_, i) => (i === idxOpt ? "#059669" : "transparent"));
+
+    // 1. GRÁFICO CURVA DE PRECIO ÓPTIMO
+    const ctxOpt = document.getElementById("chartCurvaOptima");
+    if (chartOptima) chartOptima.destroy();
+    chartOptima = new Chart(ctxOpt, {
+      type: "line",
+      data: {
+        labels: preciosCurva.map((p) => CotizaSmart.formatoCLP(p)),
+        datasets: [
+          {
+            label: "Ganancia Esperada Total (CLP)",
+            data: curva.ganancia_esperada_clp,
+            yAxisID: "yCLP",
+            borderColor: "#059669",
+            backgroundColor: "rgba(5, 150, 105, 0.14)",
+            borderWidth: 3,
+            fill: true,
+            tension: 0.25,
+            pointRadius: radiosOptimo,
+            pointHoverRadius: 8,
+            pointBackgroundColor: coloresPuntoOpt,
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: 2.5,
+          },
+          {
+            label: "Probabilidad de Ganar Licitación (%)",
+            data: curva.prob_ganar_pct,
+            yAxisID: "yPct",
+            borderColor: "#1d4ed8",
+            backgroundColor: "#1d4ed8",
+            borderWidth: 2.2,
+            borderDash: [5, 4],
+            fill: false,
+            tension: 0.25,
+            pointRadius: 0,
+          },
+          {
+            label: "Margen Esperado si se Gana (CLP)",
+            data: curva.margen_si_gana_clp,
+            yAxisID: "yCLP",
+            borderColor: "#64748b",
+            borderWidth: 1.8,
+            borderDash: [2, 3],
+            fill: false,
+            tension: 0.15,
+            pointRadius: 0,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: {
+            position: "top",
+            labels: { usePointStyle: true, boxWidth: 8, font: { size: 11, weight: "600" } },
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                if (ctx.dataset.yAxisID === "yPct") {
+                  return ` ${ctx.dataset.label}: ${CotizaSmart.formatoPct(ctx.parsed.y)}`;
+                }
+                return ` ${ctx.dataset.label}: ${CotizaSmart.formatoCLP(ctx.parsed.y)}`;
+              },
+            },
+          },
+          lineasVerticalesCotizaSmart: {
+            lineas: [
+              {
+                obtenerValor: () => estadoResultados.resumen.precio_optimo_clp,
+                valoresEje: preciosCurva,
+                color: "#059669",
+                grosor: 2,
+                punteada: false,
+                etiqueta: `Óptimo: ${CotizaSmart.formatoCLP(estadoResultados.resumen.precio_optimo_clp)}`,
+                offsetY: 6,
+              },
+              {
+                obtenerValor: () => precioSeleccionado,
+                valoresEje: preciosCurva,
+                color: "#1e3a8a",
+                grosor: 2,
+                punteada: true,
+                etiqueta: "Tu Precio",
+                offsetY: 28,
+              },
+            ],
+          },
+        },
+        scales: {
+          x: {
+            ticks: { maxTicksLimit: 9, font: { size: 10 } },
+            grid: { color: "#f1f5f9" },
+          },
+          yPct: {
+            type: "linear",
+            position: "left",
+            min: 0,
+            max: 100,
+            title: { display: true, text: "Probabilidad de Ganar (%)", font: { size: 11, weight: "bold" } },
+            ticks: { callback: (v) => `${v}%`, font: { size: 10 } },
+            grid: { color: "#f1f5f9" },
+          },
+          yCLP: {
+            type: "linear",
+            position: "right",
+            title: { display: true, text: "Ganancia y Margen Esperado (CLP)", font: { size: 11, weight: "bold" } },
+            ticks: {
+              callback: (v) => CotizaSmart.formatoCLP(v),
+              font: { size: 10 },
+            },
+            grid: { drawOnChartArea: false },
+          },
+        },
+      },
+    });
+
+    // 2. HISTOGRAMA DE DISTRIBUCIÓN DE COSTO SIMULADO
+    const hist = estadoResultados.histograma;
+    const ctxHist = document.getElementById("chartHistograma");
+    if (chartHist) chartHist.destroy();
+    chartHist = new Chart(ctxHist, {
+      type: "bar",
+      data: {
+        labels: hist.centros_clp.map((c) => CotizaSmart.formatoCLP(c)),
+        datasets: [
+          {
+            label: "% de escenarios simulados",
+            data: hist.probabilidades_pct,
+            backgroundColor: hist.centros_clp.map((c) =>
+              c > precioSeleccionado ? "rgba(239, 68, 68, 0.72)" : "rgba(30, 58, 138, 0.78)"
+            ),
+            borderRadius: 4,
+            barPercentage: 0.92,
+            categoryPercentage: 0.95,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${CotizaSmart.formatoPct(ctx.parsed.y)} de los 10.000 escenarios`,
+            },
+          },
+          lineasVerticalesCotizaSmart: {
+            lineas: [
+              {
+                obtenerValor: () => estadoResultados.resumen.costo_p50_clp,
+                valoresEje: hist.centros_clp,
+                color: "#1d4ed8",
+                grosor: 2,
+                punteada: false,
+                etiqueta: "P50",
+                offsetY: 6,
+              },
+              {
+                obtenerValor: () => estadoResultados.resumen.costo_p80_clp,
+                valoresEje: hist.centros_clp,
+                color: "#d97706",
+                grosor: 2,
+                punteada: true,
+                etiqueta: "P80",
+                offsetY: 26,
+              },
+              {
+                obtenerValor: () => precioSeleccionado,
+                valoresEje: hist.centros_clp,
+                color: "#059669",
+                grosor: 2.5,
+                punteada: false,
+                etiqueta: "Oferta",
+                offsetY: 46,
+              },
+            ],
+          },
+        },
+        scales: {
+          x: {
+            ticks: { maxTicksLimit: 7, font: { size: 10 } },
+            grid: { display: false },
+          },
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: "Frecuencia (%)", font: { size: 10, weight: "bold" } },
+            ticks: { callback: (v) => `${v}%`, font: { size: 10 } },
+            grid: { color: "#f1f5f9" },
+          },
+        },
+      },
+    });
+
+    // 3. DONA DE COSTOS DIRECTOS VS INDIRECTOS
+    const desg = estadoResultados.desglose_categorias;
+    const ctxDonut = document.getElementById("chartDesglose");
+    if (chartDonut) chartDonut.destroy();
+    chartDonut = new Chart(ctxDonut, {
+      type: "doughnut",
+      data: {
+        labels: [
+          "Materiales (con merma)",
+          "Mano de Obra (HH)",
+          "Subcontratos y SEC",
+          "Imprevistos de Obra",
+          "Gastos Generales (Indirectos)",
+        ],
+        datasets: [
+          {
+            data: [
+              desg.materiales || 0,
+              desg.mano_obra || 0,
+              desg.subcontratos || 0,
+              desg.imprevistos || 0,
+              desg.gastos_generales || 0,
+            ],
+            backgroundColor: ["#1e3a8a", "#059669", "#4f46e5", "#d97706", "#64748b"],
+            borderWidth: 2,
+            borderColor: "#ffffff",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "62%",
+        plugins: {
+          legend: {
+            position: "right",
+            labels: { boxWidth: 10, font: { size: 10.5 } },
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.label}: ${CotizaSmart.formatoCLP(ctx.parsed)}`,
+            },
+          },
+        },
+      },
+    });
+
+    // 4. DIAGRAMA DE TORNADO (Top 8 partidas por amplitud de riesgo P90 - P10)
+    const top8 = (estadoResultados.ranking_riesgo || []).slice(0, 8);
+    const ctxTornado = document.getElementById("chartTornado");
+    if (chartTornado) chartTornado.destroy();
+    chartTornado = new Chart(ctxTornado, {
+      type: "bar",
+      data: {
+        labels: top8.map((it) =>
+          it.descripcion.length > 28 ? it.descripcion.slice(0, 28) + "…" : it.descripcion
+        ),
+        datasets: [
+          {
+            label: "Variación adversa P90 (+CLP)",
+            data: top8.map((it) => it.desviacion_alta_clp),
+            backgroundColor: "#dc2626",
+            borderRadius: 4,
+          },
+          {
+            label: "Ahorro escenario P10 (-CLP)",
+            data: top8.map((it) => it.desviacion_baja_clp),
+            backgroundColor: "#059669",
+            borderRadius: 4,
+          },
+        ],
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: { boxWidth: 10, font: { size: 10 } },
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.dataset.label}: ${CotizaSmart.formatoCLP(ctx.parsed.x)}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: {
+              callback: (v) => CotizaSmart.formatoCLP(v),
+              font: { size: 9.5 },
+              maxTicksLimit: 5,
+            },
+            grid: { color: "#e2e8f0" },
+          },
+          y: {
+            ticks: { font: { size: 10 } },
+            grid: { display: false },
+          },
+        },
+      },
+    });
+  }
+
+  async function recalcularSimulacionEnVivo() {
+    const vCobre = Number(document.getElementById("live-slider-cobre").value) || 0;
+    const vDolar = Number(document.getElementById("live-slider-dolar").value) || 0;
+    const calId = document.getElementById("live-sel-calibracion").value;
+
+    try {
+      CotizaSmart.mostrarSpinner("Recalculando 10.000 escenarios con nuevo mercado...");
+      const resp = await fetch(`/api/cotizaciones/${COT_ID}/precio`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          var_cobre: vCobre,
+          var_dolar: vDolar,
+          calibracion_id: calId,
+        }),
+      });
+      const data = await resp.json();
+      CotizaSmart.ocultarSpinner();
+
+      if (data.ok && data.resultados) {
+        aplicarNuevosResultadosEnPantalla(data.resultados);
+        CotizaSmart.mostrarToast("Escenario de mercado y curva actualizados.", "exito");
+      } else {
+        CotizaSmart.mostrarToast(data.error || "Error al recalcular.", "error");
+      }
+    } catch (err) {
+      CotizaSmart.ocultarSpinner();
+      CotizaSmart.mostrarToast("Error de red al recalcular.", "error");
+    }
+  }
+
+  function aplicarNuevosResultadosEnPantalla(nuevosRes) {
+    estadoResultados = nuevosRes;
+    const res = nuevosRes.resumen;
+    const evOpt = nuevosRes.evaluacion_optimo;
+    const evIng = nuevosRes.evaluacion_ingenuo;
+
+    precioSeleccionado = res.precio_optimo_clp;
+
+    // Actualizar tarjetas resumen
+    document.getElementById("card-costo-esperado").textContent = CotizaSmart.formatoCLP(res.costo_esperado_clp);
+    document.getElementById("card-costo-p80").textContent = CotizaSmart.formatoCLP(res.costo_p80_clp);
+    document.getElementById("card-equilibrio").textContent = CotizaSmart.formatoCLP(res.punto_equilibrio_clp);
+    document.getElementById("card-min-seguro").textContent = CotizaSmart.formatoCLP(res.precio_min_seguro_clp);
+    document.getElementById("card-precio-optimo").textContent = CotizaSmart.formatoCLP(res.precio_optimo_clp);
+    document.getElementById("card-optimo-pct").textContent = `+${CotizaSmart.formatoPct(evOpt.margen_sobre_costo_pct)} s/costo`;
+
+    document.getElementById("banner-optimo-clp").textContent = CotizaSmart.formatoCLP(evOpt.precio_ofertado_clp);
+    document.getElementById("banner-optimo-riesgo").textContent = `${CotizaSmart.formatoPct(evOpt.prob_perdida_pct)} pérdida (${evOpt.semaforo === 'verde' ? 'Verde' : 'Amarillo'})`;
+
+    document.getElementById("btn-lbl-ingenuo").textContent = CotizaSmart.formatoCLP(res.precio_ingenuo_clp);
+    document.getElementById("btn-lbl-seguro").textContent = CotizaSmart.formatoCLP(res.precio_min_seguro_clp);
+    document.getElementById("btn-lbl-optimo").textContent = CotizaSmart.formatoCLP(res.precio_optimo_clp);
+
+    document.getElementById("lbl-costo-directo-esp").textContent = CotizaSmart.formatoCLP(res.costo_directo_esperado_clp);
+    document.getElementById("lbl-costo-indirecto-esp").textContent = CotizaSmart.formatoCLP(res.costo_indirecto_esperado_clp);
+
+    // Info calibración y aviso de normalización por tamaño
+    document.getElementById("texto-info-calibracion").textContent = nuevosRes.calibracion_info.descripcion;
+    const bannerAvisoTam = document.getElementById("banner-aviso-tamano");
+    const textoAvisoTam = document.getElementById("texto-aviso-tamano");
+    if (bannerAvisoTam && textoAvisoTam) {
+      if (nuevosRes.calibracion_info.aviso_tamano) {
+        textoAvisoTam.textContent = nuevosRes.calibracion_info.aviso_tamano;
+        bannerAvisoTam.classList.remove("hidden");
+      } else {
+        bannerAvisoTam.classList.add("hidden");
+      }
+    }
+
+    // Actualizar límites del slider
+    const slider = document.getElementById("slider-precio-ofertado");
+    slider.min = nuevosRes.curva_precio_optimo.precios_clp[0];
+    slider.max = nuevosRes.curva_precio_optimo.precios_clp[nuevosRes.curva_precio_optimo.precios_clp.length - 1];
+    slider.value = precioSeleccionado;
+
+    // Actualizar comparador
+    document.getElementById("cmp-ingenuo-precio").textContent = CotizaSmart.formatoCLP(evIng.precio_ofertado_clp);
+    document.getElementById("cmp-ingenuo-perdida").textContent = `${CotizaSmart.formatoPct(evIng.prob_perdida_pct)} (${evIng.semaforo})`;
+    document.getElementById("cmp-ingenuo-win").textContent = CotizaSmart.formatoPct(evIng.prob_ganar_licitacion_pct);
+    document.getElementById("cmp-ingenuo-margen").textContent = CotizaSmart.formatoCLP(evIng.margen_esperado_clp);
+    document.getElementById("cmp-ingenuo-ganancia").textContent = CotizaSmart.formatoCLP(evIng.ganancia_esperada_clp);
+
+    document.getElementById("cmp-optimo-precio").textContent = CotizaSmart.formatoCLP(evOpt.precio_ofertado_clp);
+    document.getElementById("cmp-optimo-perdida").textContent = `${CotizaSmart.formatoPct(evOpt.prob_perdida_pct)} (${evOpt.semaforo})`;
+    document.getElementById("cmp-optimo-win").textContent = CotizaSmart.formatoPct(evOpt.prob_ganar_licitacion_pct);
+    document.getElementById("cmp-optimo-margen").textContent = CotizaSmart.formatoCLP(evOpt.margen_esperado_clp);
+    document.getElementById("cmp-optimo-ganancia").textContent = CotizaSmart.formatoCLP(evOpt.ganancia_esperada_clp);
+
+    construirGraficos();
+    actualizarPrecioDesdeSlider(precioSeleccionado);
+  }
+
+  async function subirCSVEnResultados(inputEl) {
+    if (!inputEl.files || !inputEl.files[0]) return;
+    const formData = new FormData();
+    formData.append("archivo", inputEl.files[0]);
+    formData.append("nombre", inputEl.files[0].name);
+    formData.append("cotizacion_id", COT_ID);
+
+    try {
+      CotizaSmart.mostrarSpinner("Calibrando competencia con CSV y recalculando curva...");
+      const resp = await fetch("/api/calibracion/cargar", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await resp.json();
+      if (data.ok && data.dataset) {
+        const sel = document.getElementById("live-sel-calibracion");
+        const opt = document.createElement("option");
+        opt.value = data.dataset.id;
+        opt.textContent = `[${data.dataset.tipo.toUpperCase()}] ${data.dataset.nombre} (${data.dataset.n_registros})`;
+        opt.selected = true;
+        sel.appendChild(opt);
+        await recalcularSimulacionEnVivo();
+      } else {
+        CotizaSmart.ocultarSpinner();
+        CotizaSmart.mostrarToast(data.error || "Error al calibrar CSV.", "error");
+      }
+    } catch (err) {
+      CotizaSmart.ocultarSpinner();
+      CotizaSmart.mostrarToast("Error de red al subir el CSV.", "error");
+    } finally {
+      inputEl.value = "";
+    }
+  }
+
+  async function guardarPrecioActual() {
+    try {
+      CotizaSmart.mostrarSpinner("Guardando precio ofertado y escenario en la cotización...");
+      const resp = await fetch(`/api/cotizaciones/${COT_ID}/precio`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          precio_ofertado_clp: precioSeleccionado,
+          var_cobre: Number(document.getElementById("live-slider-cobre").value) || 0,
+          var_dolar: Number(document.getElementById("live-slider-dolar").value) || 0,
+          calibracion_id: document.getElementById("live-sel-calibracion").value,
+        }),
+      });
+      const data = await resp.json();
+      CotizaSmart.ocultarSpinner();
+      if (data.ok) {
+        CotizaSmart.mostrarToast(
+          `Cotización guardada con Precio Ofertado ${CotizaSmart.formatoCLP(precioSeleccionado)}.`,
+          "exito"
+        );
+      } else {
+        CotizaSmart.mostrarToast(data.error || "No se pudo guardar.", "error");
+      }
+    } catch (err) {
+      CotizaSmart.ocultarSpinner();
+      CotizaSmart.mostrarToast("Error de red al guardar cotización.", "error");
+    }
+  }
+
+  function abrirComparadorEscenarios() {
+    document.getElementById("modal-comparar-escenarios").classList.remove("hidden");
+  }
+
+  function cerrarComparadorEscenarios() {
+    document.getElementById("modal-comparar-escenarios").classList.add("hidden");
+  }
+
+  async function simularShockCobreDolar() {
+    cerrarComparadorEscenarios();
+    document.getElementById("live-slider-cobre").value = 15;
+    document.getElementById("live-lbl-cobre").textContent = "+15,0%";
+    document.getElementById("live-slider-dolar").value = 8;
+    document.getElementById("live-lbl-dolar").textContent = "+8,0%";
+    await recalcularSimulacionEnVivo();
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    construirGraficos();
+  });
+</script>
+{% endblock %}
