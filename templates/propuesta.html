@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block title %}Propuesta Comercial: {{ cotizacion.codigo }} — CotizaSmart{% endblock %}
+
+{% block content %}
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+  <div>
+    <div class="flex flex-wrap items-center gap-2.5 mb-1">
+      <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Generador de Propuesta Comercial Ejecutiva</h1>
+      {% if cotizacion.es_demo %}
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300">
+        <i data-lucide="flask-conical" class="w-3.5 h-3.5"></i> Datos de demostración
+      </span>
+      {% endif %}
+    </div>
+    <p class="text-sm text-slate-600">
+      Vista previa lista para enviar al cliente: oculta automáticamente márgenes internos, mermas y rangos de riesgo Montecarlo.
+    </p>
+  </div>
+
+  <div class="flex flex-wrap items-center gap-2.5">
+    <select
+      aria-label="Seleccionar cotización para propuesta"
+      onchange="window.location.href = '/propuesta/' + this.value"
+      class="px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold bg-white text-slate-800"
+    >
+      {% for c in lista_cotizaciones %}
+      <option value="{{ c.id }}" {% if c.id == cotizacion.id %}selected{% endif %}>
+        {{ c.codigo }} — {{ c.nombre }} ({{ c.precio_ofertado_clp | clp }})
+      </option>
+      {% endfor %}
+    </select>
+
+    <a href="{{ url_for('descargar_pdf_propuesta', cot_id=cotizacion.id) }}" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-sm transition-colors">
+      <i data-lucide="file-down" class="w-4 h-4"></i>
+      <span>Descargar Propuesta PDF</span>
+    </a>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+  <!-- Panel lateral de personalización de condiciones comerciales -->
+  <div class="saas-card p-5 lg:col-span-4 space-y-4">
+    <div class="border-b border-slate-200 pb-3">
+      <span class="text-xs font-bold uppercase tracking-wider text-blue-900">Parámetros Comerciales</span>
+      <h2 class="text-base font-extrabold text-slate-900">Personalizar Condiciones del PDF</h2>
+    </div>
+
+    <div>
+      <label for="prop-cliente" class="block text-xs font-bold text-slate-700 mb-1">Razón Social Cliente</label>
+      <input id="prop-cliente" type="text" value="{{ cotizacion.cliente }}" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label for="prop-rut" class="block text-xs font-bold text-slate-700 mb-1">RUT Cliente</label>
+        <input id="prop-rut" type="text" value="{{ cotizacion.rut_cliente }}" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs" />
+      </div>
+      <div>
+        <label for="prop-validez" class="block text-xs font-bold text-slate-700 mb-1">Validez Oferta (días)</label>
+        <input id="prop-validez" type="number" min="1" max="120" value="{{ cotizacion.validez_dias }}" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs" />
+      </div>
+    </div>
+
+    <div>
+      <label for="prop-alcance" class="block text-xs font-bold text-slate-700 mb-1">Alcance Técnico de la Obra</label>
+      <textarea id="prop-alcance" rows="4" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs leading-relaxed">{{ cotizacion.alcance_propuesta }}</textarea>
+    </div>
+
+    <div>
+      <label for="prop-pago" class="block text-xs font-bold text-slate-700 mb-1">Condiciones de Pago</label>
+      <textarea id="prop-pago" rows="2" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs leading-relaxed">{{ cotizacion.condiciones_pago }}</textarea>
+    </div>
+
+    <div class="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-950 space-y-1">
+      <span class="font-bold block">Privacidad Comercial Garantizada:</span>
+      <p class="text-[11px] leading-relaxed">
+        El precio neto ofertado ({{ desglose.precio_neto_clp | clp }}) se distribuye proporcionalmente en las partidas sin exponer tus costos internos ni rangos Montecarlo.
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-2 pt-1">
+      <button type="button" onclick="guardarCambiosPropuesta()" class="w-full py-2.5 px-4 rounded-xl bg-blue-900 hover:bg-blue-950 text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors">
+        <i data-lucide="save" class="w-4 h-4"></i>
+        <span>Actualizar Vista Previa y PDF</span>
+      </button>
+      <a href="{{ url_for('ver_resultados', cot_id=cotizacion.id) }}" class="w-full py-2 px-4 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold text-center">
+        &larr; Volver a Curva de Precio Óptimo
+      </a>
+    </div>
+  </div>
+
+  <!-- VISTA PREVIA DEL DOCUMENTO PDF PARA EL CLIENTE -->
+  <div class="saas-card lg:col-span-8 overflow-hidden border-2 border-slate-200 shadow-lg">
+    <!-- Encabezado de hoja A4 corporativa -->
+    <div class="bg-slate-900 text-white px-7 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-xl bg-emerald-500 flex items-center justify-center text-slate-950 font-black shadow">
+          <i data-lucide="zap" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <span class="text-xl font-extrabold tracking-tight block leading-none">CotizaSmart</span>
+          <span class="text-[11px] text-emerald-400 font-semibold uppercase tracking-wider">Ingeniería y Proyectos Eléctricos · Normativa SEC RIC</span>
+        </div>
+      </div>
+      <div class="sm:text-right">
+        <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-400 block">Propuesta Técnica y Comercial</span>
+        <span class="text-sm font-bold text-white block">N° {{ cotizacion.codigo }}</span>
+        <span class="text-xs text-slate-300">Fecha: {{ cotizacion.fecha_creacion }} · Validez: <strong id="prev-validez">{{ cotizacion.validez_dias }}</strong> días</span>
+      </div>
+    </div>
+
+    <div class="p-7 space-y-6 bg-white">
+      <!-- 1. Antecedentes del Cliente -->
+      <div>
+        <h3 class="text-xs font-extrabold uppercase tracking-wider text-blue-900 mb-2.5">1. Antecedentes del Mandante y Proyecto</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+          <div>
+            <span class="text-slate-500 block">Cliente / Mandante:</span>
+            <strong id="prev-cliente" class="text-slate-900 text-sm">{{ cotizacion.cliente }}</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">RUT Cliente:</span>
+            <strong id="prev-rut" class="text-slate-900">{{ cotizacion.rut_cliente }}</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Proyecto / Obra:</span>
+            <strong class="text-slate-900">{{ cotizacion.nombre }}</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Ubicación y Plazo de Ejecución:</span>
+            <strong class="text-slate-900">{{ cotizacion.ciudad }} · {{ cotizacion.plazo_dias }} días corridos</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Especialidad Técnica:</span>
+            <strong class="text-slate-900">{{ cotizacion.tipo_proyecto }}</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Magnitud de Instalación:</span>
+            <strong class="text-slate-900">{{ cotizacion.superficie_m2 | int }} m² intervenidos · {{ cotizacion.puntos_electricos }} puntos eléctricos</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Alcance Técnico -->
+      <div>
+        <h3 class="text-xs font-extrabold uppercase tracking-wider text-blue-900 mb-1.5">2. Alcance Técnico del Suministro y Montaje</h3>
+        <p id="prev-alcance" class="text-xs text-slate-700 leading-relaxed p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          {{ cotizacion.alcance_propuesta }}
+        </p>
+      </div>
+
+      <!-- 3. Resumen Comercial por Categoría -->
+      <div>
+        <h3 class="text-xs font-extrabold uppercase tracking-wider text-blue-900 mb-2">3. Resumen Comercial por Categoría</h3>
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-100 border-b border-slate-200 font-bold text-slate-700">
+                <th class="py-2.5 px-4">Categoría del Alcance</th>
+                <th class="py-2.5 px-4 text-right">Incidencia</th>
+                <th class="py-2.5 px-4 text-right">Valor Neto (CLP)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              {% for cat in desglose.resumen_categorias %}
+              <tr>
+                <td class="py-2.5 px-4 font-semibold text-slate-800">{{ cat.nombre }}</td>
+                <td class="py-2.5 px-4 text-right text-slate-600">{{ cat.porcentaje | pct }}</td>
+                <td class="py-2.5 px-4 text-right font-bold text-slate-900">{{ cat.monto_clp | clp }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4. Detalle de Partidas Comerciales -->
+      <div>
+        <h3 class="text-xs font-extrabold uppercase tracking-wider text-blue-900 mb-2">4. Itemizado Comercial de la Oferta</h3>
+        <div class="overflow-x-auto border border-slate-200 rounded-xl max-h-80">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="sticky top-0 bg-slate-100 border-b border-slate-200 font-bold text-slate-700">
+              <tr>
+                <th class="py-2 px-3">Ítem</th>
+                <th class="py-2 px-3">Descripción</th>
+                <th class="py-2 px-3 text-center">Unid.</th>
+                <th class="py-2 px-3 text-right">Cant.</th>
+                <th class="py-2 px-3 text-right">P. Unitario</th>
+                <th class="py-2 px-3 text-right">Subtotal Neto</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              {% for it in desglose.items_comerciales %}
+              <tr class="hover:bg-slate-50">
+                <td class="py-2 px-3 font-semibold text-slate-500">{{ it.item }}</td>
+                <td class="py-2 px-3 text-slate-800">{{ it.descripcion }}</td>
+                <td class="py-2 px-3 text-center text-slate-600">{{ it.unidad }}</td>
+                <td class="py-2 px-3 text-right text-slate-700">{{ it.cantidad }}</td>
+                <td class="py-2 px-3 text-right text-slate-700 whitespace-nowrap">{{ it.precio_unitario_clp | clp }}</td>
+                <td class="py-2 px-3 text-right font-semibold text-slate-900 whitespace-nowrap">{{ it.subtotal_clp | clp }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 5. Condiciones de Pago y Cuadro Neto + IVA 19% + Total -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 pt-2 items-start">
+        <div class="md:col-span-7 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+          <span class="font-extrabold text-slate-900 block">Condiciones Comerciales y Garantía:</span>
+          <p class="text-slate-700"><strong>Forma de pago:</strong> <span id="prev-pago">{{ cotizacion.condiciones_pago }}</span></p>
+          <p class="text-slate-700"><strong>Validez de la oferta:</strong> <span id="prev-validez-2">{{ cotizacion.validez_dias }}</span> días corridos desde su emisión.</p>
+          <p class="text-slate-700"><strong>Garantía técnica:</strong> 12 meses sobre montaje e instalación según pliegos RIC SEC.</p>
+        </div>
+
+        <div class="md:col-span-5 rounded-xl border border-slate-300 overflow-hidden text-xs">
+          <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex justify-between">
+            <span class="font-bold text-slate-600">SUBTOTAL NETO:</span>
+            <span class="font-extrabold text-slate-900">{{ desglose.precio_neto_clp | clp }}</span>
+          </div>
+          <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex justify-between">
+            <span class="font-bold text-slate-600">IVA (19%):</span>
+            <span class="font-extrabold text-slate-900">{{ desglose.iva_clp | clp }}</span>
+          </div>
+          <div class="px-4 py-3 bg-emerald-600 text-white flex justify-between items-baseline">
+            <span class="font-extrabold">TOTAL OFERTA (CLP):</span>
+            <span class="text-base font-black">{{ desglose.total_con_iva_clp | clp }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const COT_PROP_ID = {{ cotizacion.id }};
+
+  async function guardarCambiosPropuesta() {
+    const cliente = document.getElementById("prop-cliente").value;
+    const rut = document.getElementById("prop-rut").value;
+    const validez = Number(document.getElementById("prop-validez").value) || 15;
+    const alcance = document.getElementById("prop-alcance").value;
+    const pago = document.getElementById("prop-pago").value;
+
+    try {
+      CotizaSmart.mostrarSpinner("Actualizando propuesta comercial...");
+      const resp = await fetch(`/api/cotizaciones/${COT_PROP_ID}/propuesta`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cliente,
+          rut_cliente: rut,
+          validez_dias: validez,
+          alcance_propuesta: alcance,
+          condiciones_pago: pago,
+        }),
+      });
+      const data = await resp.json();
+      CotizaSmart.ocultarSpinner();
+      if (data.ok) {
+        document.getElementById("prev-cliente").textContent = cliente;
+        document.getElementById("prev-rut").textContent = rut;
+        document.getElementById("prev-validez").textContent = validez;
+        document.getElementById("prev-validez-2").textContent = validez;
+        document.getElementById("prev-alcance").textContent = alcance;
+        document.getElementById("prev-pago").textContent = pago;
+        CotizaSmart.mostrarToast("Datos de la propuesta actualizados.", "exito");
+      } else {
+        CotizaSmart.mostrarToast(data.error || "No se pudo actualizar.", "error");
+      }
+    } catch (err) {
+      CotizaSmart.ocultarSpinner();
+      CotizaSmart.mostrarToast("Error de red al guardar propuesta.", "error");
+    }
+  }
+</script>
+{% endblock %}

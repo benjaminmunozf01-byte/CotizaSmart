@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% block title %}Historial y Calibración de Competencia — CotizaSmart{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+  <div>
+    <div class="flex flex-wrap items-center gap-2.5 mb-1">
+      <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Historial de Cotizaciones y Calibración de Mercado</h1>
+      {% if tiene_datos_demo %}
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300">
+        <i data-lucide="flask-conical" class="w-3.5 h-3.5"></i> Datos de demostración
+      </span>
+      {% endif %}
+    </div>
+    <p class="text-sm text-slate-600">
+      Administra el estado comercial de tus ofertas y entrena la curva de probabilidad de ganar con datos de competencia o historial propio.
+    </p>
+  </div>
+
+  <div class="flex flex-wrap items-center gap-2">
+    <a href="{{ url_for('descargar_csv_ejemplo', tipo='competencia') }}" class="px-3 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold flex items-center gap-1.5">
+      <i data-lucide="download" class="w-3.5 h-3.5 text-blue-900"></i>
+      <span>precios_competencia_ejemplo.csv (40 filas)</span>
+    </a>
+    <a href="{{ url_for('descargar_csv_ejemplo', tipo='historial') }}" class="px-3 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold flex items-center gap-1.5">
+      <i data-lucide="download" class="w-3.5 h-3.5 text-emerald-700"></i>
+      <span>historial_cotizaciones_ejemplo.csv (30 filas)</span>
+    </a>
+  </div>
+</div>
+
+<!-- ZONA DE CALIBRACIÓN DE PROBABILIDAD DE GANAR + GRÁFICO DE CURVA CALIBRADA -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+  <!-- Panel izquierdo: Subida de CSV y selección de dataset activo -->
+  <div class="saas-card p-6 lg:col-span-5 flex flex-col justify-between space-y-4">
+    <div class="space-y-4">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-wider text-blue-900">Motor de Aprendizaje Comercial</span>
+        <h2 class="text-base font-extrabold text-slate-900">Calibrar Curva de Probabilidad de Ganar</h2>
+        <p class="text-xs text-slate-600 mt-0.5">
+          Sube un CSV con precios adjudicados de competidores (distribución empírica) o tu historial de ofertas ganadas/perdidas (regresión logística).
+        </p>
+      </div>
+
+      <!-- Zona de carga de CSV -->
+      <label class="flex flex-col items-center justify-center p-5 border-2 border-dashed border-blue-300 hover:border-blue-900 bg-blue-50/40 hover:bg-blue-50/80 rounded-2xl cursor-pointer transition-all text-center">
+        <div class="w-10 h-10 rounded-xl bg-blue-900 text-white flex items-center justify-center mb-2">
+          <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+        </div>
+        <span class="text-xs font-bold text-slate-900">Haz clic para subir CSV de calibración</span>
+        <span class="text-[11px] text-slate-500 mt-0.5">Soporta precios_competencia.csv o historial_cotizaciones.csv</span>
+        <input type="file" accept=".csv" class="hidden" onchange="subirCSVCalibracionHistorial(this)" />
+      </label>
+
+      <!-- Lista de datasets disponibles para activar con 1 clic -->
+      <div class="space-y-2">
+        <span class="text-xs font-bold text-slate-700 block">Seleccionar modelo de probabilidad activo:</span>
+
+        <button type="button" onclick="activarDatasetCalibracion(0)" class="w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between {% if not dataset_activo %}border-blue-900 bg-blue-50/60{% else %}border-slate-200 hover:bg-slate-50{% endif %}">
+          <div>
+            <span class="text-xs font-bold text-slate-900 block">Curva Logística por Defecto (Genérica)</span>
+            <span class="text-[11px] text-slate-500">Centrada en Costo Esperado × 1,25 · 0 registros externos</span>
+          </div>
+          {% if not dataset_activo %}
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-900 text-white">Activo</span>
+          {% endif %}
+        </button>
+
+        {% for d in datasets %}
+        <button type="button" onclick="activarDatasetCalibracion({{ d.id }})" class="w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between {% if dataset_activo and dataset_activo.id == d.id %}border-emerald-600 bg-emerald-50/60{% else %}border-slate-200 hover:bg-slate-50{% endif %}">
+          <div class="pr-2">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-xs font-bold text-slate-900">{{ d.nombre }}</span>
+              {% if d.es_demo %}
+              <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-100 text-amber-900">Datos de demostración</span>
+              {% endif %}
+            </div>
+            <span class="text-[11px] text-slate-500 block mt-0.5">
+              Tipo: <strong class="uppercase">{{ d.tipo }}</strong> · Sustentada en <strong>{{ d.n_registros }} registros</strong>
+              {% if d.datos.filas_descartadas is defined and d.datos.filas_descartadas > 0 %}
+              · <span class="text-amber-800 font-semibold">{{ d.datos.filas_descartadas }} filas descartadas</span>
+              {% endif %}
+            </span>
+            {% if d.datos.aviso_tamano %}
+            <span class="text-[11px] text-amber-800 font-bold block mt-0.5">
+              ⚠ {{ d.datos.aviso_tamano }}
+            </span>
+            {% endif %}
+          </div>
+          {% if dataset_activo and dataset_activo.id == d.id %}
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600 text-white shrink-0">Activo</span>
+          {% else %}
+          <span class="text-[11px] font-semibold text-blue-900 shrink-0">Activar</span>
+          {% endif %}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel derecho: Gráfico de la curva calibrada y cuántos datos la sustentan -->
+  <div class="saas-card p-6 lg:col-span-7 flex flex-col justify-between">
+    <div>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900">Curva Calibrada de Probabilidad de Ganar P(win | precio)</h2>
+          <p class="text-xs text-slate-500">
+            Comparativa sobre proyecto de referencia (Costo esperado: {{ datos_grafico_calibracion.costo_referencia_clp | clp }})
+          </p>
+        </div>
+
+        <!-- Contador destacado de datos que sustentan la curva -->
+        <div class="px-3.5 py-2 rounded-xl {% if dataset_activo %}bg-emerald-50 border border-emerald-200 text-emerald-950{% else %}bg-amber-50 border border-amber-200 text-amber-950{% endif %} text-xs font-bold flex items-center gap-2">
+          <i data-lucide="database" class="w-4 h-4"></i>
+          {% if dataset_activo %}
+          <span>Sustentada en {{ dataset_activo.n_registros }} datos reales ({{ dataset_activo.tipo }})</span>
+          {% else %}
+          <span>Curva genérica por defecto (0 datos CSV activos)</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="h-72 w-full relative mb-4">
+        <canvas id="chartCalibracion"></canvas>
+      </div>
+    </div>
+
+    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <span>
+        <strong>Lectura para el contratista:</strong> A medida que subes tu precio respecto al costo esperado, la probabilidad de adjudicar baja según el comportamiento real de tus competidores.
+      </span>
+      <a href="{{ url_for('ver_resultados', cot_id=cot_demo_id) }}" class="text-blue-900 font-bold hover:underline shrink-0">
+        Aplicar en Resultados &rarr;
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- TABLA DE COTIZACIONES GUARDADAS CON CAMBIO DE ESTADO -->
+<div class="saas-card overflow-hidden">
+  <div class="px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div>
+      <h2 class="text-base font-extrabold text-slate-900">Registro Histórico de Cotizaciones ({{ cotizaciones | length }})</h2>
+      <p class="text-xs text-slate-500">Puedes cambiar el estado comercial (Borrador, Enviada, Ganada, Perdida) directamente en cada fila</p>
+    </div>
+
+    <!-- Filtro rápido por estado -->
+    <div class="flex items-center gap-2">
+      <label for="filtro-estado-tabla" class="text-xs font-semibold text-slate-600">Filtrar estado:</label>
+      <select id="filtro-estado-tabla" onchange="filtrarTablaHistorial(this.value)" class="px-3 py-1.5 rounded-xl border border-slate-300 text-xs bg-white font-semibold">
+        <option value="todos">Todos ({{ cotizaciones | length }})</option>
+        <option value="ganada">Ganadas</option>
+        <option value="enviada">Enviadas</option>
+        <option value="borrador">Borradores</option>
+        <option value="perdida">Perdidas</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+          <th class="py-3 px-4">Código / Fecha</th>
+          <th class="py-3 px-4">Proyecto / Cliente</th>
+          <th class="py-3 px-4">Ciudad / Tipo</th>
+          <th class="py-3 px-4 text-right">Costo Esperado</th>
+          <th class="py-3 px-4 text-right">Precio Ofertado</th>
+          <th class="py-3 px-4 text-center">Semáforo</th>
+          <th class="py-3 px-4">Estado Comercial</th>
+          <th class="py-3 px-4 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-historial" class="divide-y divide-slate-200 text-xs">
+        {% for c in cotizaciones %}
+        <tr data-estado="{{ c.estado }}" class="hover:bg-slate-50/90 transition-colors">
+          <td class="py-3.5 px-4 whitespace-nowrap">
+            <span class="font-bold text-slate-900 block">{{ c.codigo }}</span>
+            <span class="text-slate-500">{{ c.fecha_creacion }}</span>
+          </td>
+          <td class="py-3.5 px-4">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <a href="{{ url_for('ver_resultados', cot_id=c.id) }}" class="font-bold text-slate-900 hover:text-blue-900">
+                {{ c.nombre }}
+              </a>
+              {% if c.es_demo %}
+              <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                Datos de demostración
+              </span>
+              {% endif %}
+            </div>
+            <span class="text-slate-500 block mt-0.5">{{ c.cliente }}</span>
+          </td>
+          <td class="py-3.5 px-4 whitespace-nowrap">
+            <span class="font-semibold text-slate-800 block">{{ c.ciudad }}</span>
+            <span class="text-[11px] text-slate-500">{{ c.superficie_m2 | int }} m² · {{ c.puntos_electricos }} pts</span>
+          </td>
+          <td class="py-3.5 px-4 text-right font-medium text-slate-700 whitespace-nowrap">
+            {{ c.costo_esperado_clp | clp }}
+          </td>
+          <td class="py-3.5 px-4 text-right font-bold text-slate-900 whitespace-nowrap">
+            {{ c.precio_ofertado_clp | clp }}
+            <span class="block text-[10px] font-normal text-slate-500">Óptimo: {{ c.precio_optimo_clp | clp }}</span>
+          </td>
+          <td class="py-3.5 px-4 text-center whitespace-nowrap">
+            {% if c.semaforo == 'verde' %}
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold semaforo-verde">
+              Verde ({{ c.prob_perdida_pct | pct }})
+            </span>
+            {% elif c.semaforo == 'amarillo' %}
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold semaforo-amarillo">
+              Amarillo ({{ c.prob_perdida_pct | pct }})
+            </span>
+            {% else %}
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold semaforo-rojo">
+              Rojo ({{ c.prob_perdida_pct | pct }})
+            </span>
+            {% endif %}
+          </td>
+          <td class="py-3.5 px-4 whitespace-nowrap">
+            <select
+              aria-label="Cambiar estado de {{ c.codigo }}"
+              onchange="cambiarEstadoCotizacion({{ c.id }}, this.value, this)"
+              class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold bg-white cursor-pointer"
+            >
+              <option value="borrador" {% if c.estado == 'borrador' %}selected{% endif %}>Borrador</option>
+              <option value="enviada" {% if c.estado == 'enviada' %}selected{% endif %}>Enviada</option>
+              <option value="ganada" {% if c.estado == 'ganada' %}selected{% endif %}>Ganada</option>
+              <option value="perdida" {% if c.estado == 'perdida' %}selected{% endif %}>Perdida</option>
+            </select>
+          </td>
+          <td class="py-3.5 px-4 text-right whitespace-nowrap">
+            <div class="inline-flex items-center gap-1.5">
+              <a href="{{ url_for('ver_resultados', cot_id=c.id) }}" class="px-2.5 py-1.5 rounded-lg bg-blue-900 hover:bg-blue-950 text-white font-semibold">
+                Resultados
+              </a>
+              <a href="{{ url_for('propuesta_comercial', cot_id=c.id) }}" class="px-2.5 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold">
+                Propuesta
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const DATOS_CAL = {{ datos_grafico_calibracion | tojson }};
+  const DATASETS_LISTA = {{ datasets | tojson }};
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const ctx = document.getElementById("chartCalibracion");
+    if (!ctx) return;
+
+    const series = [
+      {
+        label: "Curva Genérica por Defecto (Costo × 1,25)",
+        data: DATOS_CAL.curva_generica_pct,
+        borderColor: "#94a3b8",
+        borderWidth: 2,
+        borderDash: [5, 4],
+        pointRadius: 0,
+        tension: 0.25,
+      },
+    ];
+
+    DATASETS_LISTA.forEach((ds) => {
+      const pts = DATOS_CAL.curvas_por_dataset[ds.id];
+      if (!pts) return;
+      const esActivo = DATOS_CAL.dataset_activo && DATOS_CAL.dataset_activo.id === ds.id;
+      const color = ds.tipo === "competencia" ? "#059669" : "#1d4ed8";
+      series.push({
+        label: `${ds.nombre} (${ds.n_registros} datos)${esActivo ? " [ACTIVA]" : ""}`,
+        data: pts,
+        borderColor: color,
+        backgroundColor: esActivo ? "rgba(5, 150, 105, 0.1)" : "transparent",
+        borderWidth: esActivo ? 3.2 : 2,
+        fill: esActivo,
+        pointRadius: 0,
+        tension: 0.2,
+      });
+    });
+
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: DATOS_CAL.precios_clp.map((p) => CotizaSmart.formatoCLP(p)),
+        datasets: series,
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: {
+            position: "top",
+            labels: { usePointStyle: true, boxWidth: 8, font: { size: 10.5, weight: "600" } },
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => ` ${context.dataset.label}: ${CotizaSmart.formatoPct(context.parsed.y)}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { maxTicksLimit: 8, font: { size: 10 } },
+            grid: { color: "#f1f5f9" },
+          },
+          y: {
+            min: 0,
+            max: 100,
+            title: { display: true, text: "Probabilidad de Ganar Licitación (%)", font: { size: 11, weight: "bold" } },
+            ticks: { callback: (v) => `${v}%`, font: { size: 10 } },
+            grid: { color: "#f1f5f9" },
+          },
+        },
+      },
+    });
+  });
+
+  async function cambiarEstadoCotizacion(cotId, nuevoEstado, selectEl) {
+    try {
+      const resp = await fetch(`/api/cotizaciones/${cotId}/estado`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ estado: nuevoEstado }),
+      });
+      const data = await resp.json();
+      if (data.ok) {
+        const fila = selectEl.closest("tr");
+        if (fila) fila.setAttribute("data-estado", nuevoEstado);
+        CotizaSmart.mostrarToast(`Estado actualizado a '${nuevoEstado.toUpperCase()}'.`, "exito");
+      } else {
+        CotizaSmart.mostrarToast(data.error || "No se pudo cambiar el estado.", "error");
+      }
+    } catch (err) {
+      CotizaSmart.mostrarToast("Error de red al actualizar estado.", "error");
+    }
+  }
+
+  function filtrarTablaHistorial(estadoFiltro) {
+    const filas = document.querySelectorAll("#tbody-historial tr");
+    filas.forEach((tr) => {
+      const est = tr.getAttribute("data-estado");
+      if (estadoFiltro === "todos" || est === estadoFiltro) {
+        tr.classList.remove("hidden");
+      } else {
+        tr.classList.add("hidden");
+      }
+    });
+  }
+
+  async function subirCSVCalibracionHistorial(inputEl) {
+    if (!inputEl.files || !inputEl.files[0]) return;
+    const formData = new FormData();
+    formData.append("archivo", inputEl.files[0]);
+    formData.append("nombre", inputEl.files[0].name);
+
+    try {
+      CotizaSmart.mostrarSpinner("Procesando CSV y ajustando curva de probabilidad...");
+      const resp = await fetch("/api/calibracion/cargar", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await resp.json();
+      CotizaSmart.ocultarSpinner();
+      if (data.ok) {
+        CotizaSmart.mostrarToast(data.mensaje, "exito");
+        setTimeout(() => window.location.reload(), 600);
+      } else {
+        CotizaSmart.mostrarToast(data.error || "Error al calibrar CSV.", "error");
+      }
+    } catch (err) {
+      CotizaSmart.ocultarSpinner();
+      CotizaSmart.mostrarToast("Error de red al subir CSV.", "error");
+    } finally {
+      inputEl.value = "";
+    }
+  }
+
+  async function activarDatasetCalibracion(calId) {
+    try {
+      CotizaSmart.mostrarSpinner("Activando modelo de calibración...");
+      const resp = await fetch(`/api/calibracion/${calId}/activar`, {
+        method: "POST",
+      });
+      const data = await resp.json();
+      CotizaSmart.ocultarSpinner();
+      if (data.ok) {
+        window.location.reload();
+      }
+    } catch (err) {
+      CotizaSmart.ocultarSpinner();
+      CotizaSmart.mostrarToast("Error al activar calibración.", "error");
+    }
+  }
+</script>
+{% endblock %}
