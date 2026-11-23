@@ -1,0 +1,16 @@
+# Archivos generados en tiempo de ejecución y cachés de Python / R / Pytest
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.Rhistory
+cotizasmart.db
+*.db
+*.sqlite
+*.sqlite3
+.env
+.venv/
+venv/
+ENV/
+.DS_Store
+Thumbs.db
