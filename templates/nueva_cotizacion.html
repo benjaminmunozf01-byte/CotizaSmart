@@ -5,7 +5,7 @@
 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
   <div>
     <div class="flex items-center gap-2.5">
-      <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">
+      <h1 class="text-2xl font-extrabold text-brand-text tracking-tight">
         {% if modo_edicion %}
           Editar Cotización: {{ cotizacion_editar.codigo }}
         {% else %}
@@ -18,14 +18,14 @@
       </span>
       {% endif %}
     </div>
-    <p class="text-sm text-slate-600">
+    <p class="text-sm text-brand-muted">
       Asistente guiado de 4 pasos: define rangos PERT (mínimo, probable, máximo), ajusta mercado Cobre/Dólar y simula 10.000 escenarios.
     </p>
   </div>
 
   <!-- Aviso de cuota del plan gratuito -->
   {% if not modo_edicion %}
-  <div class="px-3.5 py-2 rounded-xl border {% if info_plan.bloqueado %}bg-red-50 border-red-200 text-red-900{% else %}bg-blue-50 border-blue-200 text-blue-950{% endif %} text-xs font-medium flex items-center gap-2">
+  <div class="px-3.5 py-2 rounded-xl border {% if info_plan.bloqueado %}bg-red-50 border-red-200 text-red-900{% else %}bg-brand-soft border-brand-border text-brand-deep{% endif %} text-xs font-medium flex items-center gap-2">
     <i data-lucide="info" class="w-4 h-4 shrink-0"></i>
     <span>{{ info_plan.texto_contador }}</span>
   </div>
@@ -35,62 +35,62 @@
 <!-- Barra de progreso de 4 pasos -->
 <div class="saas-card p-4 mb-6">
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-    <button type="button" onclick="irAPaso(1)" id="step-btn-1" class="flex items-center gap-3 p-3 rounded-xl border-2 border-blue-900 bg-blue-50/70 text-left transition-all">
-      <span id="step-badge-1" class="w-7 h-7 rounded-lg bg-blue-900 text-white text-xs font-bold flex items-center justify-center shrink-0">1</span>
+    <button type="button" onclick="irAPaso(1)" id="step-btn-1" class="flex items-center gap-3 p-3 rounded-xl border-2 border-brand-primary bg-brand-soft/70 text-left transition-all">
+      <span id="step-badge-1" class="w-7 h-7 rounded-lg bg-brand-primary text-white text-xs font-bold flex items-center justify-center shrink-0">1</span>
       <div>
-        <span class="text-xs font-bold text-slate-900 block">Datos del Proyecto</span>
-        <span class="text-[11px] text-slate-500">Cliente, m² y puntos</span>
+        <span class="text-xs font-bold text-brand-text block">Datos del Proyecto</span>
+        <span class="text-[11px] text-brand-muted">Cliente, m² y puntos</span>
       </div>
     </button>
 
-    <button type="button" onclick="irAPaso(2)" id="step-btn-2" class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-left transition-all">
-      <span id="step-badge-2" class="w-7 h-7 rounded-lg bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center shrink-0">2</span>
+    <button type="button" onclick="irAPaso(2)" id="step-btn-2" class="flex items-center gap-3 p-3 rounded-xl border border-brand-border hover:bg-brand-surface text-left transition-all">
+      <span id="step-badge-2" class="w-7 h-7 rounded-lg bg-brand-soft text-brand-deep text-xs font-bold flex items-center justify-center shrink-0">2</span>
       <div>
-        <span class="text-xs font-bold text-slate-900 block">Partidas y Rangos</span>
-        <span class="text-[11px] text-slate-500">Materiales, HH y cobre</span>
+        <span class="text-xs font-bold text-brand-text block">Partidas y Rangos</span>
+        <span class="text-[11px] text-brand-muted">Materiales, HH y cobre</span>
       </div>
     </button>
 
-    <button type="button" onclick="irAPaso(3)" id="step-btn-3" class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-left transition-all">
-      <span id="step-badge-3" class="w-7 h-7 rounded-lg bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center shrink-0">3</span>
+    <button type="button" onclick="irAPaso(3)" id="step-btn-3" class="flex items-center gap-3 p-3 rounded-xl border border-brand-border hover:bg-brand-surface text-left transition-all">
+      <span id="step-badge-3" class="w-7 h-7 rounded-lg bg-brand-soft text-brand-deep text-xs font-bold flex items-center justify-center shrink-0">3</span>
       <div>
-        <span class="text-xs font-bold text-slate-900 block">Escenario de Mercado</span>
-        <span class="text-[11px] text-slate-500">Cobre, dólar y GG %</span>
+        <span class="text-xs font-bold text-brand-text block">Escenario de Mercado</span>
+        <span class="text-[11px] text-brand-muted">Cobre, dólar y GG %</span>
       </div>
     </button>
 
-    <button type="button" onclick="irAPaso(4)" id="step-btn-4" class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-left transition-all">
-      <span id="step-badge-4" class="w-7 h-7 rounded-lg bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center shrink-0">4</span>
+    <button type="button" onclick="irAPaso(4)" id="step-btn-4" class="flex items-center gap-3 p-3 rounded-xl border border-brand-border hover:bg-brand-surface text-left transition-all">
+      <span id="step-badge-4" class="w-7 h-7 rounded-lg bg-brand-soft text-brand-deep text-xs font-bold flex items-center justify-center shrink-0">4</span>
       <div>
-        <span class="text-xs font-bold text-slate-900 block">Calibración y Simulación</span>
-        <span class="text-[11px] text-slate-500">Competencia CSV opcional</span>
+        <span class="text-xs font-bold text-brand-text block">Calibración y Simulación</span>
+        <span class="text-[11px] text-brand-muted">Competencia CSV opcional</span>
       </div>
     </button>
   </div>
-  <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mt-3">
-    <div id="wizard-progress-bar" class="h-full bg-blue-900 transition-all duration-300" style="width: 25%"></div>
+  <div class="w-full h-1.5 bg-brand-soft rounded-full overflow-hidden mt-3">
+    <div id="wizard-progress-bar" class="h-full bg-brand-primary transition-all duration-300" style="width: 25%"></div>
   </div>
 </div>
 
 <!-- PASO 1: DATOS DEL PROYECTO -->
 <section id="wizard-step-1" class="saas-card p-6 space-y-6">
-  <div class="border-b border-slate-200 pb-4 flex items-center justify-between">
+  <div class="border-b border-brand-border pb-4 flex items-center justify-between">
     <div>
-      <span class="text-xs font-bold uppercase tracking-wider text-blue-900">Paso 1 de 4</span>
-      <h2 class="text-lg font-extrabold text-slate-900">Identificación y Alcance Físico de la Obra</h2>
+      <span class="text-xs font-bold uppercase tracking-wider text-brand-primary">Paso 1 de 4</span>
+      <h2 class="text-lg font-extrabold text-brand-text">Identificación y Alcance Físico de la Obra</h2>
     </div>
-    <span class="text-xs text-slate-500">Todos los campos cuentan con valores sugeridos</span>
+    <span class="text-xs text-brand-muted">Todos los campos cuentan con valores sugeridos</span>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
     <div class="lg:col-span-2">
-      <label for="inp-nombre" class="block text-xs font-bold text-slate-700 mb-1.5">Nombre del Proyecto / Obra *</label>
-      <input id="inp-nombre" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" placeholder="Ej: Instalación eléctrica local comercial 120 m² - Los Ángeles" value="{{ cotizacion_editar.nombre if cotizacion_editar else 'Instalación eléctrica local comercial 120 m² - Los Ángeles' }}" />
+      <label for="inp-nombre" class="block text-xs font-bold text-brand-text mb-1.5">Nombre del Proyecto / Obra *</label>
+      <input id="inp-nombre" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-sm text-brand-text" placeholder="Ej: Instalación eléctrica local comercial 120 m² - Los Ángeles" value="{{ cotizacion_editar.nombre if cotizacion_editar else 'Instalación eléctrica local comercial 120 m² - Los Ángeles' }}" />
     </div>
 
     <div>
-      <label for="inp-tipo" class="block text-xs font-bold text-slate-700 mb-1.5">Tipo de Instalación *</label>
-      <select id="inp-tipo" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+      <label for="inp-tipo" class="block text-xs font-bold text-brand-text mb-1.5">Tipo de Instalación *</label>
+      <select id="inp-tipo" class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-sm bg-white text-brand-text">
         {% set tipo_sel = cotizacion_editar.tipo_proyecto if cotizacion_editar else 'Instalación eléctrica comercial' %}
         <option value="Instalación eléctrica residencial" {% if 'residencial' in tipo_sel %}selected{% endif %}>Instalación eléctrica residencial</option>
         <option value="Instalación eléctrica comercial" {% if 'comercial' in tipo_sel %}selected{% endif %}>Instalación eléctrica comercial</option>
@@ -99,33 +99,33 @@
     </div>
 
     <div>
-      <label for="inp-cliente" class="block text-xs font-bold text-slate-700 mb-1.5">Cliente / Mandante *</label>
-      <input id="inp-cliente" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" placeholder="Ej: Comercializadora Biobío SpA" value="{{ cotizacion_editar.cliente if cotizacion_editar else 'Comercializadora Gastronómica y Retail Biobío SpA' }}" />
+      <label for="inp-cliente" class="block text-xs font-bold text-brand-text mb-1.5">Cliente / Mandante *</label>
+      <input id="inp-cliente" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-sm text-brand-text" placeholder="Ej: Comercializadora Biobío SpA" value="{{ cotizacion_editar.cliente if cotizacion_editar else 'Comercializadora Gastronómica y Retail Biobío SpA' }}" />
     </div>
 
     <div>
-      <label for="inp-rut" class="block text-xs font-bold text-slate-700 mb-1.5">RUT Cliente</label>
-      <input id="inp-rut" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" placeholder="76.548.320-4" value="{{ cotizacion_editar.rut_cliente if cotizacion_editar else '76.548.320-4' }}" />
+      <label for="inp-rut" class="block text-xs font-bold text-brand-text mb-1.5">RUT Cliente</label>
+      <input id="inp-rut" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-sm text-brand-text" placeholder="76.548.320-4" value="{{ cotizacion_editar.rut_cliente if cotizacion_editar else '76.548.320-4' }}" />
     </div>
 
     <div>
-      <label for="inp-ciudad" class="block text-xs font-bold text-slate-700 mb-1.5">Ciudad / Comuna *</label>
-      <input id="inp-ciudad" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" placeholder="Los Ángeles" value="{{ cotizacion_editar.ciudad if cotizacion_editar else 'Los Ángeles' }}" />
+      <label for="inp-ciudad" class="block text-xs font-bold text-brand-text mb-1.5">Ciudad / Comuna *</label>
+      <input id="inp-ciudad" type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-sm text-brand-text" placeholder="Los Ángeles" value="{{ cotizacion_editar.ciudad if cotizacion_editar else 'Los Ángeles' }}" />
     </div>
 
     <div>
-      <label for="inp-m2" class="block text-xs font-bold text-slate-700 mb-1.5">Superficie a Intervenir (m²) *</label>
-      <input id="inp-m2" type="number" min="1" step="1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" value="{{ (cotizacion_editar.superficie_m2 | int) if cotizacion_editar else 120 }}" />
+      <label for="inp-m2" class="block text-xs font-bold text-brand-text mb-1.5">Superficie a Intervenir (m²) *</label>
+      <input id="inp-m2" type="number" min="1" step="1" class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-sm text-brand-text" value="{{ (cotizacion_editar.superficie_m2 | int) if cotizacion_editar else 120 }}" />
     </div>
 
     <div>
-      <label for="inp-puntos" class="block text-xs font-bold text-slate-700 mb-1.5">Puntos Eléctricos (Enchufes + Centros) *</label>
-      <input id="inp-puntos" type="number" min="1" step="1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" value="{{ cotizacion_editar.puntos_electricos if cotizacion_editar else 56 }}" />
+      <label for="inp-puntos" class="block text-xs font-bold text-brand-text mb-1.5">Puntos Eléctricos (Enchufes + Centros) *</label>
+      <input id="inp-puntos" type="number" min="1" step="1" class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-sm text-brand-text" value="{{ cotizacion_editar.puntos_electricos if cotizacion_editar else 56 }}" />
     </div>
 
     <div>
-      <label for="inp-estado" class="block text-xs font-bold text-slate-700 mb-1.5">Estado Inicial de la Cotización</label>
-      <select id="inp-estado" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+      <label for="inp-estado" class="block text-xs font-bold text-brand-text mb-1.5">Estado Inicial de la Cotización</label>
+      <select id="inp-estado" class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-sm bg-white text-brand-text">
         {% set est_sel = cotizacion_editar.estado if cotizacion_editar else 'borrador' %}
         <option value="borrador" {% if est_sel == 'borrador' %}selected{% endif %}>Borrador</option>
         <option value="enviada" {% if est_sel == 'enviada' %}selected{% endif %}>Enviada</option>
@@ -135,8 +135,8 @@
     </div>
   </div>
 
-  <div class="pt-4 border-t border-slate-200 flex justify-end">
-    <button id="btn-ir-paso-2" type="button" onclick="irAPaso(2)" class="px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-950 text-white text-sm font-semibold flex items-center gap-2">
+  <div class="pt-4 border-t border-brand-border flex justify-end">
+    <button id="btn-ir-paso-2" type="button" onclick="irAPaso(2)" class="px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-hover text-white text-sm font-semibold flex items-center gap-2">
       <span>Continuar a Partidas</span>
       <i data-lucide="arrow-right" class="w-4 h-4"></i>
     </button>
@@ -145,12 +145,12 @@
 
 <!-- PASO 2: PARTIDAS DINÁMICAS -->
 <section id="wizard-step-2" class="hidden saas-card p-6 space-y-5">
-  <div class="border-b border-slate-200 pb-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+  <div class="border-b border-brand-border pb-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
     <div>
-      <span class="text-xs font-bold uppercase tracking-wider text-blue-900">Paso 2 de 4</span>
-      <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+      <span class="text-xs font-bold uppercase tracking-wider text-brand-primary">Paso 2 de 4</span>
+      <h2 class="text-lg font-extrabold text-brand-text flex items-center gap-2">
         <span>Estructura de Partidas con Rangos PERT</span>
-        <span class="tooltip-wrapper text-slate-400">
+        <span class="tooltip-wrapper text-brand-muted">
           <i data-lucide="help-circle" class="w-4 h-4"></i>
           <span class="tooltip-box">Ingresa 3 valores por partida: Mínimo (escenario optimista), Probable (lo habitual) y Máximo (si hay alzas o complicaciones). En Mano de Obra los 3 valores son Horas-Hombre (HH).</span>
         </span>
@@ -163,13 +163,13 @@
         <span>Usar plantilla eléctrica (18 partidas)</span>
       </button>
 
-      <label class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
-        <i data-lucide="upload" class="w-3.5 h-3.5 text-blue-900"></i>
+      <label class="px-3.5 py-2 rounded-xl bg-white hover:bg-brand-surface text-brand-text border border-brand-border text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+        <i data-lucide="upload" class="w-3.5 h-3.5 text-brand-primary"></i>
         <span>Cargar base de costos (CSV)</span>
         <input id="inp-csv-costos" type="file" accept=".csv" class="hidden" onchange="subirCSVBaseCostos(this)" />
       </label>
 
-      <a href="{{ url_for('descargar_csv_ejemplo', tipo='base_costos') }}" class="px-3 py-2 rounded-xl text-blue-900 hover:bg-blue-50 text-xs font-semibold flex items-center gap-1" title="Descargar plantilla CSV de base de costos">
+      <a href="{{ url_for('descargar_csv_ejemplo', tipo='base_costos') }}" class="px-3 py-2 rounded-xl text-brand-primary hover:bg-brand-soft text-xs font-semibold flex items-center gap-1" title="Descargar plantilla CSV de base de costos">
         <i data-lucide="download" class="w-3.5 h-3.5"></i>
         <span>Plantilla CSV</span>
       </a>
@@ -177,35 +177,35 @@
   </div>
 
   <!-- Botones para agregar nueva fila por categoría -->
-  <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+  <div class="flex flex-wrap items-center justify-between gap-3 bg-brand-surface p-3 rounded-xl border border-brand-border">
     <div class="flex flex-wrap items-center gap-2">
-      <span class="text-xs font-bold text-slate-600 mr-1">Agregar partida:</span>
-      <button type="button" onclick="agregarFilaPartida('materiales')" class="px-3 py-1.5 rounded-lg bg-white hover:bg-blue-50 border border-slate-300 text-xs font-semibold text-slate-800 flex items-center gap-1">
-        <i data-lucide="plus" class="w-3.5 h-3.5 text-blue-800"></i> Material
+      <span class="text-xs font-bold text-brand-muted mr-1">Agregar partida:</span>
+      <button type="button" onclick="agregarFilaPartida('materiales')" class="px-3 py-1.5 rounded-lg bg-white hover:bg-brand-soft border border-brand-border text-xs font-semibold text-brand-text flex items-center gap-1">
+        <i data-lucide="plus" class="w-3.5 h-3.5 text-brand-primary"></i> Material
       </button>
-      <button type="button" onclick="agregarFilaPartida('mano_obra')" class="px-3 py-1.5 rounded-lg bg-white hover:bg-blue-50 border border-slate-300 text-xs font-semibold text-slate-800 flex items-center gap-1">
+      <button type="button" onclick="agregarFilaPartida('mano_obra')" class="px-3 py-1.5 rounded-lg bg-white hover:bg-brand-soft border border-brand-border text-xs font-semibold text-brand-text flex items-center gap-1">
         <i data-lucide="plus" class="w-3.5 h-3.5 text-emerald-700"></i> Mano de obra (HH)
       </button>
-      <button type="button" onclick="agregarFilaPartida('subcontratos')" class="px-3 py-1.5 rounded-lg bg-white hover:bg-blue-50 border border-slate-300 text-xs font-semibold text-slate-800 flex items-center gap-1">
-        <i data-lucide="plus" class="w-3.5 h-3.5 text-indigo-700"></i> Subcontrato
+      <button type="button" onclick="agregarFilaPartida('subcontratos')" class="px-3 py-1.5 rounded-lg bg-white hover:bg-brand-soft border border-brand-border text-xs font-semibold text-brand-text flex items-center gap-1">
+        <i data-lucide="plus" class="w-3.5 h-3.5 text-brand-light"></i> Subcontrato
       </button>
-      <button type="button" onclick="agregarFilaPartida('imprevistos')" class="px-3 py-1.5 rounded-lg bg-white hover:bg-blue-50 border border-slate-300 text-xs font-semibold text-slate-800 flex items-center gap-1">
+      <button type="button" onclick="agregarFilaPartida('imprevistos')" class="px-3 py-1.5 rounded-lg bg-white hover:bg-brand-soft border border-brand-border text-xs font-semibold text-brand-text flex items-center gap-1">
         <i data-lucide="plus" class="w-3.5 h-3.5 text-amber-700"></i> Imprevistos (%)
       </button>
     </div>
 
     <div class="flex flex-wrap items-center gap-4 text-xs">
-      <span class="text-slate-600">Sensibles Cobre: <strong id="lbl-count-cobre" class="text-amber-800">0</strong></span>
-      <span class="text-slate-600">Sensibles Dólar: <strong id="lbl-count-dolar" class="text-blue-800">0</strong></span>
-      <span class="text-slate-600">Costo directo PERT est.: <strong id="lbl-subtotal-directo" class="text-blue-950 text-sm">$0</strong></span>
+      <span class="text-brand-muted">Sensibles Cobre: <strong id="lbl-count-cobre" class="text-amber-800">0</strong></span>
+      <span class="text-brand-muted">Sensibles Dólar: <strong id="lbl-count-dolar" class="text-brand-primary">0</strong></span>
+      <span class="text-brand-muted">Costo directo PERT est.: <strong id="lbl-subtotal-directo" class="text-brand-deep text-sm">$0</strong></span>
     </div>
   </div>
 
   <!-- Tabla editable de partidas -->
-  <div class="overflow-x-auto border border-slate-200 rounded-xl">
+  <div class="overflow-x-auto border border-brand-border rounded-xl">
     <table class="w-full text-left border-collapse min-w-[1040px]">
       <thead>
-        <tr class="bg-slate-100 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+        <tr class="bg-brand-soft border-b border-brand-border text-[11px] font-bold uppercase tracking-wider text-brand-deep">
           <th class="py-2.5 px-2.5 w-32">Categoría</th>
           <th class="py-2.5 px-2.5">Descripción de Partida</th>
           <th class="py-2.5 px-2 w-20">Unid.</th>
@@ -220,16 +220,16 @@
           <th class="py-2.5 px-2 w-10"></th>
         </tr>
       </thead>
-      <tbody id="tbody-partidas" class="divide-y divide-slate-200 text-xs"></tbody>
+      <tbody id="tbody-partidas" class="divide-y divide-brand-border text-xs"></tbody>
     </table>
   </div>
 
-  <div class="pt-4 border-t border-slate-200 flex items-center justify-between">
-    <button type="button" onclick="irAPaso(1)" class="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-sm font-semibold flex items-center gap-2">
+  <div class="pt-4 border-t border-brand-border flex items-center justify-between">
+    <button type="button" onclick="irAPaso(1)" class="px-4 py-2.5 rounded-xl border border-brand-border hover:bg-brand-surface text-brand-text text-sm font-semibold flex items-center gap-2">
       <i data-lucide="arrow-left" class="w-4 h-4"></i>
       <span>Volver</span>
     </button>
-    <button id="btn-ir-paso-3" type="button" onclick="validarYContinuarPaso3()" class="px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-950 text-white text-sm font-semibold flex items-center gap-2">
+    <button id="btn-ir-paso-3" type="button" onclick="validarYContinuarPaso3()" class="px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-hover text-white text-sm font-semibold flex items-center gap-2">
       <span>Continuar a Escenario de Mercado</span>
       <i data-lucide="arrow-right" class="w-4 h-4"></i>
     </button>
@@ -238,10 +238,10 @@
 
 <!-- PASO 3: ESCENARIO DE MERCADO (COBRE, DÓLAR, GASTOS GENERALES) -->
 <section id="wizard-step-3" class="hidden saas-card p-6 space-y-6">
-  <div class="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+  <div class="border-b border-brand-border pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
     <div>
-      <span class="text-xs font-bold uppercase tracking-wider text-blue-900">Paso 3 de 4</span>
-      <h2 class="text-lg font-extrabold text-slate-900">Escenario Macroeconómico (Cobre y Dólar) y Costos Indirectos</h2>
+      <span class="text-xs font-bold uppercase tracking-wider text-brand-primary">Paso 3 de 4</span>
+      <h2 class="text-lg font-extrabold text-brand-text">Escenario Macroeconómico (Cobre y Dólar) y Costos Indirectos</h2>
     </div>
     <span class="px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold">
       Factor ajuste en partidas sensibles: <strong id="lbl-factor-mercado">1,000x (0,0%)</strong>
@@ -250,8 +250,8 @@
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Tarjeta Sliders Cobre y Dólar -->
-    <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-5">
-      <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+    <div class="p-5 rounded-2xl bg-brand-surface border border-brand-border space-y-5">
+      <h3 class="text-sm font-bold text-brand-text flex items-center gap-2">
         <i data-lucide="trending-up" class="w-4 h-4 text-amber-600"></i>
         <span>Variación proyectada de Cobre y Dólar</span>
       </h3>
@@ -259,11 +259,11 @@
       <!-- Slider Cobre (-20% a +30%) -->
       <div>
         <div class="flex items-center justify-between text-xs font-bold mb-1.5">
-          <label for="inp-var-cobre" class="text-slate-700">Variación Precio del Cobre (-20% a +30%)</label>
+          <label for="inp-var-cobre" class="text-brand-text">Variación Precio del Cobre (-20% a +30%)</label>
           <span id="lbl-var-cobre" class="px-2 py-0.5 rounded bg-amber-100 text-amber-900">0,0%</span>
         </div>
         <input id="inp-var-cobre" type="range" min="-20" max="30" step="1" value="{{ cotizacion_editar.var_cobre if cotizacion_editar else 0 }}" class="w-full saas-slider" oninput="actualizarVistaMercado()" />
-        <div class="flex justify-between text-[11px] text-slate-400 mt-1">
+        <div class="flex justify-between text-[11px] text-brand-muted mt-1">
           <span>-20% (Baja LME)</span>
           <span>0% (Actual)</span>
           <span>+30% (Shock alcista)</span>
@@ -273,11 +273,11 @@
       <!-- Slider Dólar (-10% a +15%) -->
       <div>
         <div class="flex items-center justify-between text-xs font-bold mb-1.5">
-          <label for="inp-var-dolar" class="text-slate-700">Variación Tipo de Cambio Dólar CLP (-10% a +15%)</label>
-          <span id="lbl-var-dolar" class="px-2 py-0.5 rounded bg-blue-100 text-blue-900">0,0%</span>
+          <label for="inp-var-dolar" class="text-brand-text">Variación Tipo de Cambio Dólar CLP (-10% a +15%)</label>
+          <span id="lbl-var-dolar" class="px-2 py-0.5 rounded bg-brand-soft text-brand-deep">0,0%</span>
         </div>
         <input id="inp-var-dolar" type="range" min="-10" max="15" step="1" value="{{ cotizacion_editar.var_dolar if cotizacion_editar else 0 }}" class="w-full saas-slider" oninput="actualizarVistaMercado()" />
-        <div class="flex justify-between text-[11px] text-slate-400 mt-1">
+        <div class="flex justify-between text-[11px] text-brand-muted mt-1">
           <span>-10% (Apreciación CLP)</span>
           <span>0% (Actual)</span>
           <span>+15% (Alza USD)</span>
@@ -285,70 +285,70 @@
       </div>
 
       <!-- Factores de sensibilidad editables -->
-      <div class="grid grid-cols-2 gap-4 pt-2 border-t border-slate-200">
+      <div class="grid grid-cols-2 gap-4 pt-2 border-t border-brand-border">
         <div>
-          <label for="inp-sens-cobre" class="block text-xs font-bold text-slate-700 mb-1">Factor sensibilidad Cobre</label>
-          <input id="inp-sens-cobre" type="number" min="0" max="2" step="0.05" value="{{ cotizacion_editar.sens_cobre if cotizacion_editar else 0.6 }}" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white" oninput="actualizarVistaMercado()" />
-          <span class="text-[11px] text-slate-500">Por defecto: 0,6</span>
+          <label for="inp-sens-cobre" class="block text-xs font-bold text-brand-text mb-1">Factor sensibilidad Cobre</label>
+          <input id="inp-sens-cobre" type="number" min="0" max="2" step="0.05" value="{{ cotizacion_editar.sens_cobre if cotizacion_editar else 0.6 }}" class="w-full px-3 py-2 rounded-xl border border-brand-border text-sm bg-white text-brand-text" oninput="actualizarVistaMercado()" />
+          <span class="text-[11px] text-brand-muted">Por defecto: 0,6</span>
         </div>
         <div>
-          <label for="inp-sens-dolar" class="block text-xs font-bold text-slate-700 mb-1">Factor sensibilidad Dólar</label>
-          <input id="inp-sens-dolar" type="number" min="0" max="2" step="0.05" value="{{ cotizacion_editar.sens_dolar if cotizacion_editar else 0.3 }}" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white" oninput="actualizarVistaMercado()" />
-          <span class="text-[11px] text-slate-500">Por defecto: 0,3</span>
+          <label for="inp-sens-dolar" class="block text-xs font-bold text-brand-text mb-1">Factor sensibilidad Dólar</label>
+          <input id="inp-sens-dolar" type="number" min="0" max="2" step="0.05" value="{{ cotizacion_editar.sens_dolar if cotizacion_editar else 0.3 }}" class="w-full px-3 py-2 rounded-xl border border-brand-border text-sm bg-white text-brand-text" oninput="actualizarVistaMercado()" />
+          <span class="text-[11px] text-brand-muted">Por defecto: 0,3</span>
         </div>
       </div>
     </div>
 
     <!-- Tarjeta Gastos Generales %, Utilidad y Plazo -->
-    <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
-      <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-        <i data-lucide="building-2" class="w-4 h-4 text-blue-900"></i>
+    <div class="p-5 rounded-2xl bg-brand-surface border border-brand-border space-y-4">
+      <h3 class="text-sm font-bold text-brand-text flex items-center gap-2">
+        <i data-lucide="building-2" class="w-4 h-4 text-brand-primary"></i>
         <span>Gastos Generales (Indirectos), Utilidad y Plazo</span>
       </h3>
 
       <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1.5">
+        <label class="block text-xs font-bold text-brand-text mb-1.5">
           Rango de Gastos Generales (% sobre costo directo) *
         </label>
         <div class="grid grid-cols-3 gap-3">
           <div>
-            <span class="text-[11px] text-slate-500 block mb-1">Mínimo %</span>
-            <input id="inp-gg-min" type="number" min="0" max="100" step="0.5" value="{{ cotizacion_editar.gg_min if cotizacion_editar else 9.0 }}" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white" />
+            <span class="text-[11px] text-brand-muted block mb-1">Mínimo %</span>
+            <input id="inp-gg-min" type="number" min="0" max="100" step="0.5" value="{{ cotizacion_editar.gg_min if cotizacion_editar else 9.0 }}" class="w-full px-3 py-2 rounded-xl border border-brand-border text-sm bg-white text-brand-text" />
           </div>
           <div>
-            <span class="text-[11px] text-slate-500 block mb-1">Probable %</span>
-            <input id="inp-gg-prob" type="number" min="0" max="100" step="0.5" value="{{ cotizacion_editar.gg_prob if cotizacion_editar else 12.0 }}" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white" />
+            <span class="text-[11px] text-brand-muted block mb-1">Probable %</span>
+            <input id="inp-gg-prob" type="number" min="0" max="100" step="0.5" value="{{ cotizacion_editar.gg_prob if cotizacion_editar else 12.0 }}" class="w-full px-3 py-2 rounded-xl border border-brand-border text-sm bg-white text-brand-text" />
           </div>
           <div>
-            <span class="text-[11px] text-slate-500 block mb-1">Máximo %</span>
-            <input id="inp-gg-max" type="number" min="0" max="100" step="0.5" value="{{ cotizacion_editar.gg_max if cotizacion_editar else 22.0 }}" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white" />
+            <span class="text-[11px] text-brand-muted block mb-1">Máximo %</span>
+            <input id="inp-gg-max" type="number" min="0" max="100" step="0.5" value="{{ cotizacion_editar.gg_max if cotizacion_editar else 22.0 }}" class="w-full px-3 py-2 rounded-xl border border-brand-border text-sm bg-white text-brand-text" />
           </div>
         </div>
-        <p class="text-[11px] text-slate-500 mt-1">
+        <p class="text-[11px] text-brand-muted mt-1">
           Incluye supervisión técnica, camioneta, seguros, herramientas y administración de oficina.
         </p>
       </div>
 
       <div class="grid grid-cols-2 gap-4 pt-2">
         <div>
-          <label for="inp-utilidad" class="block text-xs font-bold text-slate-700 mb-1">Utilidad Tradicional Referencial (%)</label>
-          <input id="inp-utilidad" type="number" min="1" max="100" step="1" value="{{ cotizacion_editar.utilidad_deseada if cotizacion_editar else 20.0 }}" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white" />
-          <span class="text-[11px] text-slate-500">Para comparar vs precio óptimo</span>
+          <label for="inp-utilidad" class="block text-xs font-bold text-brand-text mb-1">Utilidad Tradicional Referencial (%)</label>
+          <input id="inp-utilidad" type="number" min="1" max="100" step="1" value="{{ cotizacion_editar.utilidad_deseada if cotizacion_editar else 20.0 }}" class="w-full px-3 py-2 rounded-xl border border-brand-border text-sm bg-white text-brand-text" />
+          <span class="text-[11px] text-brand-muted">Para comparar vs precio óptimo</span>
         </div>
         <div>
-          <label for="inp-plazo" class="block text-xs font-bold text-slate-700 mb-1">Plazo de Ejecución (días corridos)</label>
-          <input id="inp-plazo" type="number" min="1" max="365" step="1" value="{{ cotizacion_editar.plazo_dias if cotizacion_editar else 21 }}" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white" />
+          <label for="inp-plazo" class="block text-xs font-bold text-brand-text mb-1">Plazo de Ejecución (días corridos)</label>
+          <input id="inp-plazo" type="number" min="1" max="365" step="1" value="{{ cotizacion_editar.plazo_dias if cotizacion_editar else 21 }}" class="w-full px-3 py-2 rounded-xl border border-brand-border text-sm bg-white text-brand-text" />
         </div>
       </div>
     </div>
   </div>
 
-  <div class="pt-4 border-t border-slate-200 flex items-center justify-between">
-    <button type="button" onclick="irAPaso(2)" class="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-sm font-semibold flex items-center gap-2">
+  <div class="pt-4 border-t border-brand-border flex items-center justify-between">
+    <button type="button" onclick="irAPaso(2)" class="px-4 py-2.5 rounded-xl border border-brand-border hover:bg-brand-surface text-brand-text text-sm font-semibold flex items-center gap-2">
       <i data-lucide="arrow-left" class="w-4 h-4"></i>
       <span>Volver a Partidas</span>
     </button>
-    <button id="btn-ir-paso-4" type="button" onclick="irAPaso(4)" class="px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-950 text-white text-sm font-semibold flex items-center gap-2">
+    <button id="btn-ir-paso-4" type="button" onclick="irAPaso(4)" class="px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-hover text-white text-sm font-semibold flex items-center gap-2">
       <span>Continuar a Calibración</span>
       <i data-lucide="arrow-right" class="w-4 h-4"></i>
     </button>
@@ -357,10 +357,10 @@
 
 <!-- PASO 4: CALIBRACIÓN DE COMPETENCIA (OPCIONAL) Y EJECUCIÓN -->
 <section id="wizard-step-4" class="hidden saas-card p-6 space-y-6">
-  <div class="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+  <div class="border-b border-brand-border pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
     <div>
-      <span class="text-xs font-bold uppercase tracking-wider text-blue-900">Paso 4 de 4 (Opcional)</span>
-      <h2 class="text-lg font-extrabold text-slate-900">Calibración de Competencia y Probabilidad de Ganar</h2>
+      <span class="text-xs font-bold uppercase tracking-wider text-brand-primary">Paso 4 de 4 (Opcional)</span>
+      <h2 class="text-lg font-extrabold text-brand-text">Calibración de Competencia y Probabilidad de Ganar</h2>
     </div>
     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300">
       <i data-lucide="flask-conical" class="w-3.5 h-3.5"></i> Datos de demostración disponibles
@@ -369,11 +369,11 @@
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Selector de modelo de probabilidad de ganar -->
-    <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
-      <label for="sel-calibracion-id" class="block text-sm font-bold text-slate-900">
+    <div class="p-5 rounded-2xl bg-brand-surface border border-brand-border space-y-4">
+      <label for="sel-calibracion-id" class="block text-sm font-bold text-brand-text">
         Fuente de datos para la curva P(ganar licitación | precio)
       </label>
-      <select id="sel-calibracion-id" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+      <select id="sel-calibracion-id" class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-sm bg-white text-brand-text">
         <option value="0" {% if not calibracion_activa_id %}selected{% endif %}>
           Por defecto: Curva logística estándar (centrada en Costo Esperado × 1,25)
         </option>
@@ -384,35 +384,35 @@
         {% endfor %}
       </select>
 
-      <div class="p-3.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-600 space-y-2">
-        <p class="font-semibold text-slate-900">¿Cómo funciona la calibración en CotizaSmart?</p>
+      <div class="p-3.5 rounded-xl bg-white border border-brand-border text-xs text-brand-muted space-y-2">
+        <p class="font-semibold text-brand-text">¿Cómo funciona la calibración en CotizaSmart?</p>
         <ul class="list-disc pl-4 space-y-1">
-          <li><strong>Sin archivo CSV:</strong> utiliza una curva logística genérica centrada en <code class="bg-slate-100 px-1 rounded">Costo Esperado × 1,25</code> (se avisará en Resultados).</li>
+          <li><strong>Sin archivo CSV:</strong> utiliza una curva logística genérica centrada en <code class="bg-brand-surface px-1 rounded text-brand-deep">Costo Esperado × 1,25</code> (se avisará en Resultados).</li>
           <li><strong>Con CSV de Competencia:</strong> usa la distribución empírica de precios adjudicados reales.</li>
-          <li><strong>Con CSV de Historial:</strong> ajusta una regresión logística propia sobre la razón <code class="bg-slate-100 px-1 rounded">Precio / Costo</code> y resultado <code class="bg-slate-100 px-1 rounded">1/0</code>.</li>
+          <li><strong>Con CSV de Historial:</strong> ajusta una regresión logística propia sobre la razón <code class="bg-brand-surface px-1 rounded text-brand-deep">Precio / Costo</code> y resultado <code class="bg-brand-surface px-1 rounded text-brand-deep">1/0</code>.</li>
         </ul>
       </div>
     </div>
 
     <!-- Subir nuevo CSV en el Paso 4 -->
-    <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
-      <h3 class="text-sm font-bold text-slate-900">Subir nuevo CSV de competencia o historial (Opcional)</h3>
-      <label class="flex flex-col items-center justify-center p-5 border-2 border-dashed border-slate-300 hover:border-blue-800 rounded-xl bg-white cursor-pointer transition-colors text-center">
-        <i data-lucide="file-up" class="w-7 h-7 text-blue-900 mb-2"></i>
-        <span class="text-xs font-bold text-slate-900">Seleccionar archivo CSV de calibración</span>
-        <span class="text-[11px] text-slate-500 mt-0.5">Detecta automáticamente formato Competencia o Historial</span>
+    <div class="p-5 rounded-2xl bg-brand-surface border border-brand-border space-y-4">
+      <h3 class="text-sm font-bold text-brand-text">Subir nuevo CSV de competencia o historial (Opcional)</h3>
+      <label class="flex flex-col items-center justify-center p-5 border-2 border-dashed border-brand-accent hover:border-brand-primary rounded-xl bg-white cursor-pointer transition-colors text-center">
+        <i data-lucide="file-up" class="w-7 h-7 text-brand-primary mb-2"></i>
+        <span class="text-xs font-bold text-brand-text">Seleccionar archivo CSV de calibración</span>
+        <span class="text-[11px] text-brand-muted mt-0.5">Detecta automáticamente formato Competencia o Historial</span>
         <input id="inp-csv-calibracion-paso4" type="file" accept=".csv" class="hidden" onchange="subirCSVCalibracionPaso4(this)" />
       </label>
 
       <div id="box-calibracion-msg" class="hidden p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium"></div>
 
       <div class="flex flex-wrap items-center justify-between gap-2 pt-2 text-xs">
-        <span class="text-slate-500 font-medium">Descargar CSV de ejemplo:</span>
+        <span class="text-brand-muted font-medium">Descargar CSV de ejemplo:</span>
         <div class="flex flex-wrap gap-2">
-          <a href="{{ url_for('descargar_csv_ejemplo', tipo='competencia') }}" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold flex items-center gap-1">
-            <i data-lucide="download" class="w-3.5 h-3.5 text-blue-900"></i> Competencia (40 filas)
+          <a href="{{ url_for('descargar_csv_ejemplo', tipo='competencia') }}" class="px-2.5 py-1.5 rounded-lg bg-white border border-brand-border hover:bg-brand-soft text-brand-text font-semibold flex items-center gap-1">
+            <i data-lucide="download" class="w-3.5 h-3.5 text-brand-primary"></i> Competencia (40 filas)
           </a>
-          <a href="{{ url_for('descargar_csv_ejemplo', tipo='historial') }}" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold flex items-center gap-1">
+          <a href="{{ url_for('descargar_csv_ejemplo', tipo='historial') }}" class="px-2.5 py-1.5 rounded-lg bg-white border border-brand-border hover:bg-brand-soft text-brand-text font-semibold flex items-center gap-1">
             <i data-lucide="download" class="w-3.5 h-3.5 text-emerald-700"></i> Historial (30 filas)
           </a>
         </div>
@@ -420,8 +420,8 @@
     </div>
   </div>
 
-  <div class="pt-4 border-t border-slate-200 flex items-center justify-between">
-    <button type="button" onclick="irAPaso(3)" class="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-sm font-semibold flex items-center gap-2">
+  <div class="pt-4 border-t border-brand-border flex items-center justify-between">
+    <button type="button" onclick="irAPaso(3)" class="px-4 py-2.5 rounded-xl border border-brand-border hover:bg-brand-surface text-brand-text text-sm font-semibold flex items-center gap-2">
       <i data-lucide="arrow-left" class="w-4 h-4"></i>
       <span>Volver a Mercado</span>
     </button>
@@ -449,14 +449,14 @@
       const badge = document.getElementById(`step-badge-${i}`);
       if (i === numPaso) {
         sec.classList.remove("hidden");
-        btn.className = "flex items-center gap-3 p-3 rounded-xl border-2 border-blue-900 bg-blue-50/70 text-left transition-all";
-        badge.className = "w-7 h-7 rounded-lg bg-blue-900 text-white text-xs font-bold flex items-center justify-center shrink-0";
+        btn.className = "flex items-center gap-3 p-3 rounded-xl border-2 border-brand-primary bg-brand-soft/70 text-left transition-all";
+        badge.className = "w-7 h-7 rounded-lg bg-brand-primary text-white text-xs font-bold flex items-center justify-center shrink-0";
       } else {
         sec.classList.add("hidden");
-        btn.className = "flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-left transition-all";
+        btn.className = "flex items-center gap-3 p-3 rounded-xl border border-brand-border hover:bg-brand-surface text-left transition-all";
         badge.className = i < numPaso
           ? "w-7 h-7 rounded-lg bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0"
-          : "w-7 h-7 rounded-lg bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center shrink-0";
+          : "w-7 h-7 rounded-lg bg-brand-soft text-brand-deep text-xs font-bold flex items-center justify-center shrink-0";
       }
     }
     const bar = document.getElementById("wizard-progress-bar");
@@ -513,7 +513,7 @@
       }
 
       const tr = document.createElement("tr");
-      tr.className = "hover:bg-slate-50/80";
+      tr.className = "hover:bg-brand-surface/80";
 
       const esMat = p.categoria === "materiales";
       const esMO = p.categoria === "mano_obra";
@@ -521,7 +521,7 @@
 
       tr.innerHTML = `
         <td class="py-2 px-2">
-          <select class="w-full px-2 py-1.5 rounded-lg border border-slate-300 text-xs bg-white font-semibold" onchange="cambiarCategoriaPartida(${idx}, this.value)">
+          <select class="w-full px-2 py-1.5 rounded-lg border border-brand-border text-xs bg-white font-semibold text-brand-text" onchange="cambiarCategoriaPartida(${idx}, this.value)">
             <option value="materiales" ${p.categoria === 'materiales' ? 'selected' : ''}>Materiales</option>
             <option value="mano_obra" ${p.categoria === 'mano_obra' ? 'selected' : ''}>Mano de obra</option>
             <option value="subcontratos" ${p.categoria === 'subcontratos' ? 'selected' : ''}>Subcontratos</option>
@@ -529,49 +529,49 @@
           </select>
         </td>
         <td class="py-2 px-2">
-          <input type="text" value="${(p.descripcion || '').replace(/"/g, '&quot;')}" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs" oninput="actualizarCampoPartida(${idx}, 'descripcion', this.value)" />
+          <input type="text" value="${(p.descripcion || '').replace(/"/g, '&quot;')}" class="w-full px-2.5 py-1.5 rounded-lg border border-brand-border text-xs text-brand-text" oninput="actualizarCampoPartida(${idx}, 'descripcion', this.value)" />
         </td>
         <td class="py-2 px-2">
-          <input type="text" value="${esMO ? 'HH' : (esImp ? '%' : (p.unidad || 'un'))}" ${esMO || esImp ? 'readonly' : ''} class="w-full px-2 py-1.5 rounded-lg border border-slate-300 text-xs text-center ${esMO || esImp ? 'bg-slate-100 text-slate-500' : ''}" oninput="actualizarCampoPartida(${idx}, 'unidad', this.value)" />
+          <input type="text" value="${esMO ? 'HH' : (esImp ? '%' : (p.unidad || 'un'))}" ${esMO || esImp ? 'readonly' : ''} class="w-full px-2 py-1.5 rounded-lg border border-brand-border text-xs text-center ${esMO || esImp ? 'bg-brand-surface text-brand-muted' : 'text-brand-text'}" oninput="actualizarCampoPartida(${idx}, 'unidad', this.value)" />
         </td>
         <td class="py-2 px-2">
-          <input type="number" min="0.1" step="any" value="${p.cantidad}" class="w-full px-2 py-1.5 rounded-lg border border-slate-300 text-xs text-right" oninput="actualizarCampoPartida(${idx}, 'cantidad', this.value)" />
+          <input type="number" min="0.1" step="any" value="${p.cantidad}" class="w-full px-2 py-1.5 rounded-lg border border-brand-border text-xs text-right text-brand-text" oninput="actualizarCampoPartida(${idx}, 'cantidad', this.value)" />
         </td>
         <td class="py-2 px-2">
-          <input type="number" min="0" step="any" value="${p.valor_min}" class="w-full px-2 py-1.5 rounded-lg border border-slate-300 text-xs text-right" oninput="actualizarCampoPartida(${idx}, 'valor_min', this.value)" title="${esMO ? 'Horas mínimas' : (esImp ? '% mínimo' : 'Precio unitario mínimo CLP')}" />
+          <input type="number" min="0" step="any" value="${p.valor_min}" class="w-full px-2 py-1.5 rounded-lg border border-brand-border text-xs text-right text-brand-text" oninput="actualizarCampoPartida(${idx}, 'valor_min', this.value)" title="${esMO ? 'Horas mínimas' : (esImp ? '% mínimo' : 'Precio unitario mínimo CLP')}" />
         </td>
         <td class="py-2 px-2">
-          <input type="number" min="0" step="any" value="${p.valor_prob}" class="w-full px-2 py-1.5 rounded-lg border border-blue-300 bg-blue-50/30 font-semibold text-xs text-right" oninput="actualizarCampoPartida(${idx}, 'valor_prob', this.value)" title="${esMO ? 'Horas probables' : (esImp ? '% probable' : 'Precio unitario probable CLP')}" />
+          <input type="number" min="0" step="any" value="${p.valor_prob}" class="w-full px-2 py-1.5 rounded-lg border border-brand-accent bg-brand-surface font-semibold text-xs text-right text-brand-text" oninput="actualizarCampoPartida(${idx}, 'valor_prob', this.value)" title="${esMO ? 'Horas probables' : (esImp ? '% probable' : 'Precio unitario probable CLP')}" />
         </td>
         <td class="py-2 px-2">
-          <input type="number" min="0" step="any" value="${p.valor_max}" class="w-full px-2 py-1.5 rounded-lg border border-slate-300 text-xs text-right" oninput="actualizarCampoPartida(${idx}, 'valor_max', this.value)" title="${esMO ? 'Horas máximas' : (esImp ? '% máximo' : 'Precio unitario máximo CLP')}" />
+          <input type="number" min="0" step="any" value="${p.valor_max}" class="w-full px-2 py-1.5 rounded-lg border border-brand-border text-xs text-right text-brand-text" oninput="actualizarCampoPartida(${idx}, 'valor_max', this.value)" title="${esMO ? 'Horas máximas' : (esImp ? '% máximo' : 'Precio unitario máximo CLP')}" />
         </td>
         <td class="py-2 px-2">
           ${
             esMat
               ? `<div class="flex items-center gap-1">
-                   <input type="number" min="0" max="100" step="0.5" value="${p.merma_pct || 0}" class="w-full px-2 py-1.5 rounded-lg border border-slate-300 text-xs text-right" oninput="actualizarCampoPartida(${idx}, 'merma_pct', this.value)" title="Porcentaje de merma de material" />
-                   <span class="text-[10px] text-slate-500">%</span>
+                   <input type="number" min="0" max="100" step="0.5" value="${p.merma_pct || 0}" class="w-full px-2 py-1.5 rounded-lg border border-brand-border text-xs text-right text-brand-text" oninput="actualizarCampoPartida(${idx}, 'merma_pct', this.value)" title="Porcentaje de merma de material" />
+                   <span class="text-[10px] text-brand-muted">%</span>
                  </div>`
               : esMO
               ? `<div class="flex items-center gap-1">
-                   <input type="number" min="100" step="100" value="${p.valor_hora || 9500}" class="w-full px-2 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50/30 text-xs text-right font-semibold" oninput="actualizarCampoPartida(${idx}, 'valor_hora', this.value)" title="Valor hora en CLP" />
-                   <span class="text-[10px] text-slate-500">$/h</span>
+                   <input type="number" min="100" step="100" value="${p.valor_hora || 9500}" class="w-full px-2 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50/30 text-xs text-right font-semibold text-brand-text" oninput="actualizarCampoPartida(${idx}, 'valor_hora', this.value)" title="Valor hora en CLP" />
+                   <span class="text-[10px] text-brand-muted">$/h</span>
                  </div>`
-              : `<span class="block text-center text-slate-400 text-[11px]">N/A</span>`
+              : `<span class="block text-center text-brand-muted text-[11px]">N/A</span>`
           }
         </td>
         <td class="py-2 px-2 text-center">
-          <input type="checkbox" ${p.sensible_cobre ? 'checked' : ''} class="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 cursor-pointer" onchange="actualizarCampoPartida(${idx}, 'sensible_cobre', this.checked)" title="Marcar partida sensible al precio del cobre" />
+          <input type="checkbox" ${p.sensible_cobre ? 'checked' : ''} class="w-4 h-4 rounded accent-amber-600 cursor-pointer" onchange="actualizarCampoPartida(${idx}, 'sensible_cobre', this.checked)" title="Marcar partida sensible al precio del cobre" />
         </td>
         <td class="py-2 px-2 text-center">
-          <input type="checkbox" ${p.sensible_dolar ? 'checked' : ''} class="w-4 h-4 rounded text-blue-700 focus:ring-blue-600 cursor-pointer" onchange="actualizarCampoPartida(${idx}, 'sensible_dolar', this.checked)" title="Marcar partida sensible al tipo de cambio dólar" />
+          <input type="checkbox" ${p.sensible_dolar ? 'checked' : ''} class="w-4 h-4 rounded accent-brand-primary cursor-pointer" onchange="actualizarCampoPartida(${idx}, 'sensible_dolar', this.checked)" title="Marcar partida sensible al tipo de cambio dólar" />
         </td>
-        <td id="celda-sub-${idx}" class="py-2 px-2.5 text-right font-bold text-slate-800 whitespace-nowrap">
+        <td id="celda-sub-${idx}" class="py-2 px-2.5 text-right font-bold text-brand-text whitespace-nowrap">
           ${CotizaSmart.formatoCLP(sub)}
         </td>
         <td class="py-2 px-2 text-center">
-          <button type="button" onclick="eliminarFilaPartida(${idx})" class="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50" title="Eliminar partida">
+          <button type="button" onclick="eliminarFilaPartida(${idx})" class="p-1 rounded-lg text-brand-muted hover:text-red-600 hover:bg-red-50" title="Eliminar partida">
             &times;
           </button>
         </td>
@@ -850,7 +850,7 @@
         body: JSON.stringify({ nombre: document.getElementById("inp-nombre").value }),
       }).catch(() => {});
       CotizaSmart.abrirModalPlanPro(
-        "Has alcanzado el límite de 3 cotizaciones mensuales del Plan Gratuito (3 de 3 usadas este mes). Actualiza al Plan Pro ($49.000 CLP/mes) para crear cotizaciones ilimitadas."
+        "Has alcanzado el límite de 3 cotizaciones mensuales del Plan Gratuito (3 de 3 usadas este mes). Actualiza al Plan Pro ($49.000 CLP/mes) para ampliar tu límite mensual."
       );
       return;
     }
