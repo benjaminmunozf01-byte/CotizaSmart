@@ -510,10 +510,86 @@ def test_todas_las_7_pantallas_y_descargas_csv():
         html_demo = client.get(ruta_demo).data.decode("utf-8")
         assert "Datos de demostración" in html_demo
 
+    # Verificar correcciones menores: coma decimal en titular de Resultados y pluralización '1 obra'
+    html_panel = client.get("/").data.decode("utf-8")
+    assert "1 obra" in html_panel
+    assert "1 obras" not in html_panel
+
+    html_res1 = client.get("/resultados/1").data.decode("utf-8")
+    assert "Con este precio hay 92,5% de probabilidad de ganar dinero (riesgo de pérdida bajo: 7,5%)." in html_res1
+    assert "92.5%" not in html_res1
+
     html_roadmap = client.get("/hoja-de-ruta").data.decode("utf-8")
     assert "NO IMPLEMENTADO" in html_roadmap
+    assert (
+        "Plan Business con asistente de IA, integración con Mercado Público y base de costos regional"
+        in html_roadmap
+    )
 
     for tipo_csv in ["competencia", "historial", "base_costos"]:
         r_csv = client.get(f"/descargar-csv/{tipo_csv}")
         assert r_csv.status_code == 200
         assert len(r_csv.data) > 200
+
+
+def test_pantalla_planes_tres_planes_business_deshabilitado_y_bloqueo():
+    """
+    Verifica los requisitos de la pantalla Planes y Hoja de Ruta:
+    - /planes responde 200 y contiene los tres nombres de plan (Plan Gratis, Plan Pro, Plan Business).
+    - Contiene la insignia 'PRÓXIMAMENTE' y 'Hasta 30 cotizaciones al mes'.
+    - El botón del Plan Business está deshabilitado ('disabled') con texto 'Próximamente' y sin onclick.
+    - No se usa la expresión 'IA entrenada'.
+    - El bloqueo de la cuarta cotización del plan gratuito sigue funcionando (HTTP 403).
+    """
+    import re
+    from app import app
+
+    client = app.test_client()
+    client.post("/api/reset-demo")
+
+    resp = client.get("/planes")
+    assert resp.status_code == 200
+    html = resp.data.decode("utf-8")
+
+    for nombre_plan in ("Plan Gratis", "Plan Pro", "Plan Business"):
+        assert nombre_plan in html
+
+    assert "PRÓXIMAMENTE" in html
+    assert "Hasta 30 cotizaciones al mes" in html
+    assert "Precio estimado, sujeto a validación" in html
+    assert "Plan en desarrollo: no está disponible en esta versión de CotizaSmart" in html
+    assert "IA entrenada" not in html
+
+    # Verificar que el botón del Plan Business esté deshabilitado y sin acción onclick
+    match_btn = re.search(
+        r'<button[^>]*id="btn-plan-business"[^>]*>(.*?)</button>', html, re.DOTALL
+    )
+    assert match_btn is not None, "No se encontró el botón del Plan Business"
+    tag_apertura = match_btn.group(0)
+    texto_boton = match_btn.group(1).strip()
+    assert "disabled" in tag_apertura
+    assert "onclick" not in tag_apertura
+    assert texto_boton == "Próximamente"
+
+    # Confirmar que el bloqueo de la 4ta cotización sigue funcionando intacto
+    payload_nueva = {
+        "nombre": "Instalación eléctrica Test Planes",
+        "cliente": "Cliente Test SpA",
+        "tipo_proyecto": "Instalación eléctrica comercial",
+        "superficie_m2": 120,
+        "puntos_electricos": 40,
+        "ciudad": "Los Ángeles",
+        "plazo_dias": 15,
+        "partidas": obtener_plantilla_electrica()[:2],
+    }
+    r_3 = client.post("/api/cotizaciones", json=payload_nueva)
+    assert r_3.status_code == 200
+    assert r_3.get_json()["info_plan"]["usadas_mes"] == 3
+
+    r_4 = client.post("/api/cotizaciones", json=payload_nueva)
+    assert r_4.status_code == 403
+    assert r_4.get_json()["limite_alcanzado"] is True
+
+    # Dejar restablecido en 2 de 3
+    r_reset = client.post("/api/reset-demo")
+    assert r_reset.get_json()["info_plan"]["usadas_mes"] == 2

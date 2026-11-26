@@ -754,23 +754,26 @@ def evaluar_precio_puntual(
     margen_pct = float((margen_clp / p) * 100.0) if p > 0 else 0.0
     ganancia_esp = float(prob_win * margen_clp)
 
+    p_ganar_str = f"{prob_ganar_dinero:.1f}%".replace(".", ",")
+    p_perdida_str = f"{prob_perdida:.1f}%".replace(".", ",")
+
     if prob_perdida < 10.0:
         semaforo = "verde"
         mensaje = (
-            f"Con este precio hay {prob_ganar_dinero:.1f}% de probabilidad de ganar dinero "
-            f"(riesgo de pérdida bajo: {prob_perdida:.1f}%)."
+            f"Con este precio hay {p_ganar_str} de probabilidad de ganar dinero "
+            f"(riesgo de pérdida bajo: {p_perdida_str})."
         )
     elif prob_perdida <= 25.0:
         semaforo = "amarillo"
         mensaje = (
-            f"Precaución: con este precio hay {prob_ganar_dinero:.1f}% de probabilidad de ganar dinero "
-            f"y un riesgo moderado de pérdida de {prob_perdida:.1f}%."
+            f"Precaución: con este precio hay {p_ganar_str} de probabilidad de ganar dinero "
+            f"y un riesgo moderado de pérdida de {p_perdida_str}."
         )
     else:
         semaforo = "rojo"
         mensaje = (
-            f"Alerta de sobrecosto: con este precio hay {prob_perdida:.1f}% de probabilidad de perder plata "
-            f"(solo {prob_ganar_dinero:.1f}% de salir con ganancia)."
+            f"Alerta de sobrecosto: con este precio hay {p_perdida_str} de probabilidad de perder plata "
+            f"(solo {p_ganar_str} de salir con ganancia)."
         )
 
     return {

@@ -146,10 +146,17 @@ def obtener_calibracion_activa(
 def asegurar_resultados_cotizacion(cot: Cotizacion) -> dict[str, Any]:
     """
     Retorna el diccionario de resultados de una cotización; si no está en caché,
-    ejecuta la simulación Montecarlo y la persiste.
+    ejecuta la simulación Montecarlo y la persiste. Normaliza porcentajes con coma decimal.
     """
     res = cot.obtener_resultados()
     if res and "resumen" in res and "curva_precio_optimo" in res:
+        for clave_ev in ("evaluacion_ofertado", "evaluacion_optimo", "evaluacion_ingenuo"):
+            ev_obj = res.get(clave_ev)
+            if isinstance(ev_obj, dict) and isinstance(ev_obj.get("mensaje_semaforo"), str):
+                import re
+                ev_obj["mensaje_semaforo"] = re.sub(
+                    r"(\d+)\.(\d+)%", r"\1,\2%", ev_obj["mensaje_semaforo"]
+                )
         return res
 
     cal_dict, _ = obtener_calibracion_activa(cot.calibracion_id)
@@ -210,8 +217,17 @@ def inyectar_contexto_global() -> dict[str, Any]:
 
 @app.route("/favicon.ico")
 def favicon():
-    """Evita 404 en consola del navegador al solicitar favicon."""
-    return "", 204
+    """Sirve el favicon vectorial SVG con el rayo en gradiente morado (#7C3AED a #A78BFA)."""
+    svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
+        '<defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">'
+        '<stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#A78BFA"/>'
+        '</linearGradient></defs>'
+        '<rect width="32" height="32" rx="8" fill="url(#g)"/>'
+        '<polygon points="18,4 8,18 15,18 13,28 24,14 17,14" fill="#1E1033"/>'
+        '</svg>'
+    )
+    return app.response_class(svg, mimetype="image/svg+xml")
 
 
 @app.route("/")

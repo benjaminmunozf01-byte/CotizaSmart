@@ -7,6 +7,7 @@ Autores: Jorge Campos, Benjamin Muñoz y Raul Vergara.
 from __future__ import annotations
 import io
 from typing import Any
+from reportlab.graphics.shapes import Drawing, Polygon, Rect
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -27,6 +28,44 @@ def formatear_clp(monto: float | int) -> str:
     signo = "-" if valor < 0 else ""
     texto = f"{abs(valor):,}".replace(",", ".")
     return f"{signo}${texto}"
+
+
+def crear_logo_vectorial_rayo() -> Drawing:
+    """
+    Construye el ícono vectorial del logo CotizaSmart para el encabezado del PDF:
+    cuadrado con bordes redondeados en morado (#7C3AED a #A78BFA) y rayo interior.
+    """
+    d = Drawing(11 * mm, 11 * mm)
+    d.add(
+        Rect(
+            0,
+            0,
+            11 * mm,
+            11 * mm,
+            rx=2.4 * mm,
+            ry=2.4 * mm,
+            fillColor=colors.HexColor("#7C3AED"),
+            strokeColor=colors.HexColor("#A78BFA"),
+            strokeWidth=0.8,
+        )
+    )
+    # Polígono del rayo estilizado en color oscuro #1E1033 para alto contraste
+    d.add(
+        Polygon(
+            points=[
+                6.2 * mm, 9.2 * mm,
+                2.8 * mm, 5.2 * mm,
+                5.3 * mm, 5.2 * mm,
+                4.6 * mm, 1.8 * mm,
+                8.2 * mm, 5.8 * mm,
+                5.7 * mm, 5.8 * mm,
+            ],
+            fillColor=colors.HexColor("#1E1033"),
+            strokeColor=colors.HexColor("#1E1033"),
+            strokeWidth=0.2,
+        )
+    )
+    return d
 
 
 def calcular_desglose_comercial_cliente(cotizacion_dict: dict[str, Any]) -> dict[str, Any]:
@@ -78,7 +117,6 @@ def calcular_desglose_comercial_cliente(cotizacion_dict: dict[str, Any]) -> dict
     acumulado = 0
     partidas_visibles = [x for x in pesos_partidas if x[1] in totales_cat]
     if not partidas_visibles:
-        # Si solo había una partida de imprevistos
         partidas_visibles = [(p, "subcontratos", 1.0) for p, _, _ in pesos_partidas]
         suma_directa = float(len(partidas_visibles) or 1)
 
@@ -134,7 +172,7 @@ def calcular_desglose_comercial_cliente(cotizacion_dict: dict[str, Any]) -> dict
 
 def generar_pdf_propuesta(cotizacion_dict: dict[str, Any]) -> bytes:
     """
-    Genera el archivo PDF de la propuesta comercial para el cliente y retorna sus bytes.
+    Genera el archivo PDF de la propuesta comercial para el cliente con la paleta morada corporativa.
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -149,12 +187,14 @@ def generar_pdf_propuesta(cotizacion_dict: dict[str, Any]) -> bytes:
     )
 
     estilos = getSampleStyleSheet()
-    azul_primario = colors.HexColor("#0F172A")
-    azul_acento = colors.HexColor("#1E3A8A")
+    morado_oscuro = colors.HexColor("#1E1033")
+    morado_primario = colors.HexColor("#6D28D9")
+    violeta_encabezado_tabla = colors.HexColor("#EDE9FE")
+    violeta_fila_suave = colors.HexColor("#FAF9FF")
+    borde_violeta = colors.HexColor("#E7E3F4")
+    texto_principal = colors.HexColor("#1F1637")
+    texto_secundario = colors.HexColor("#6B6585")
     verde_esmeralda = colors.HexColor("#059669")
-    gris_texto = colors.HexColor("#334155")
-    gris_suave = colors.HexColor("#F8FAFC")
-    gris_borde = colors.HexColor("#CBD5E1")
 
     estilo_titulo_seccion = ParagraphStyle(
         "TituloSeccion",
@@ -162,7 +202,7 @@ def generar_pdf_propuesta(cotizacion_dict: dict[str, Any]) -> bytes:
         fontName="Helvetica-Bold",
         fontSize=10.5,
         leading=13,
-        textColor=azul_acento,
+        textColor=morado_primario,
         spaceBefore=8,
         spaceAfter=4,
     )
@@ -172,7 +212,7 @@ def generar_pdf_propuesta(cotizacion_dict: dict[str, Any]) -> bytes:
         fontName="Helvetica",
         fontSize=8.8,
         leading=12,
-        textColor=gris_texto,
+        textColor=texto_principal,
     )
     estilo_celda = ParagraphStyle(
         "TextoCelda",
@@ -180,13 +220,13 @@ def generar_pdf_propuesta(cotizacion_dict: dict[str, Any]) -> bytes:
         fontName="Helvetica",
         fontSize=8.2,
         leading=10.5,
-        textColor=gris_texto,
+        textColor=texto_principal,
     )
     estilo_celda_bold = ParagraphStyle(
         "TextoCeldaBold",
         parent=estilo_celda,
         fontName="Helvetica-Bold",
-        textColor=azul_primario,
+        textColor=morado_oscuro,
     )
     estilo_pie = ParagraphStyle(
         "TextoPie",
@@ -194,36 +234,42 @@ def generar_pdf_propuesta(cotizacion_dict: dict[str, Any]) -> bytes:
         fontName="Helvetica",
         fontSize=7.5,
         leading=10,
-        textColor=colors.HexColor("#64748B"),
+        textColor=texto_secundario,
         alignment=1,
     )
 
     elementos = []
     desglose = calcular_desglose_comercial_cliente(cotizacion_dict)
 
-    # 1. Encabezado Corporativo
+    # 1. Encabezado Corporativo (#1E1033 con logo vectorial morado y subtítulo #C4B5FD)
     codigo = cotizacion_dict.get("codigo", "COT-2026-001")
     fecha = cotizacion_dict.get("fecha_creacion", "22-11-2026")
     validez = cotizacion_dict.get("validez_dias", 15)
 
-    encabezado_izq = Paragraph(
+    logo_drawing = crear_logo_vectorial_rayo()
+    encabezado_marca = Paragraph(
         "<font size=15 color='#FFFFFF'><b>CotizaSmart</b></font><br/>"
-        "<font size=7.8 color='#93C5FD'>INGENIERÍA Y PROYECTOS ELÉCTRICOS · NORMATIVA SEC RIC CHILE</font>",
+        "<font size=7.8 color='#C4B5FD'>INGENIERÍA &amp; MONTECARLO · NORMATIVA SEC RIC CHILE</font>",
         estilo_normal,
     )
     encabezado_der = Paragraph(
         f"<para align='right'><font size=10 color='#FFFFFF'><b>PROPUESTA TÉCNICA Y COMERCIAL</b></font><br/>"
-        f"<font size=8 color='#E2E8F0'>N° {codigo} · Fecha: {fecha} · Validez: {validez} días</font></para>",
+        f"<font size=8 color='#C4B5FD'>N° {codigo} · Fecha: {fecha} · Validez: {validez} días</font></para>",
         estilo_normal,
     )
-    tabla_header = Table([[encabezado_izq, encabezado_der]], colWidths=[94 * mm, 84 * mm])
+    tabla_header = Table(
+        [[logo_drawing, encabezado_marca, encabezado_der]],
+        colWidths=[15 * mm, 81 * mm, 82 * mm],
+    )
     tabla_header.setStyle(
         TableStyle(
             [
-                ("BACKGROUND", (0, 0), (-1, -1), azul_primario),
+                ("BACKGROUND", (0, 0), (-1, -1), morado_oscuro),
                 ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 12),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+                ("LEFTPADDING", (0, 0), (0, 0), 10),
+                ("RIGHTPADDING", (0, 0), (0, 0), 2),
+                ("LEFTPADDING", (1, 0), (1, 0), 4),
+                ("RIGHTPADDING", (2, 0), (2, 0), 12),
                 ("TOPPADDING", (0, 0), (-1, -1), 10),
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
             ]
@@ -264,8 +310,8 @@ def generar_pdf_propuesta(cotizacion_dict: dict[str, Any]) -> bytes:
     tabla_info.setStyle(
         TableStyle(
             [
-                ("BACKGROUND", (0, 0), (-1, -1), gris_suave),
-                ("GRID", (0, 0), (-1, -1), 0.5, gris_borde),
+                ("BACKGROUND", (0, 0), (-1, -1), violeta_fila_suave),
+                ("GRID", (0, 0), (-1, -1), 0.5, borde_violeta),
                 ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
                 ("LEFTPADDING", (0, 0), (-1, -1), 6),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 6),
@@ -312,8 +358,8 @@ def generar_pdf_propuesta(cotizacion_dict: dict[str, Any]) -> bytes:
     tabla_cat.setStyle(
         TableStyle(
             [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E2E8F0")),
-                ("GRID", (0, 0), (-1, -1), 0.5, gris_borde),
+                ("BACKGROUND", (0, 0), (-1, 0), violeta_encabezado_tabla),
+                ("GRID", (0, 0), (-1, -1), 0.5, borde_violeta),
                 ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
                 ("LEFTPADDING", (0, 0), (-1, -1), 6),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 6),
@@ -362,9 +408,9 @@ def generar_pdf_propuesta(cotizacion_dict: dict[str, Any]) -> bytes:
     tabla_det.setStyle(
         TableStyle(
             [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E2E8F0")),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, gris_suave]),
-                ("GRID", (0, 0), (-1, -1), 0.4, gris_borde),
+                ("BACKGROUND", (0, 0), (-1, 0), violeta_encabezado_tabla),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, violeta_fila_suave]),
+                ("GRID", (0, 0), (-1, -1), 0.4, borde_violeta),
                 ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
                 ("LEFTPADDING", (0, 0), (-1, -1), 4),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 4),
@@ -376,7 +422,7 @@ def generar_pdf_propuesta(cotizacion_dict: dict[str, Any]) -> bytes:
     elementos.append(tabla_det)
     elementos.append(Spacer(1, 4 * mm))
 
-    # 6. Cuadro de Totales (Neto, IVA 19%, Total) y Condiciones Comerciales
+    # 6. Cuadro de Totales (Neto, IVA 19%, Total en acento positivo #059669) y Condiciones Comerciales
     condiciones_pago = cotizacion_dict.get(
         "condiciones_pago",
         "50% anticipo contra orden de compra, 50% contra recepción conforme y entrega de certificado TE1 SEC.",
@@ -419,9 +465,9 @@ def generar_pdf_propuesta(cotizacion_dict: dict[str, Any]) -> bytes:
     tabla_totales.setStyle(
         TableStyle(
             [
-                ("BACKGROUND", (0, 0), (-1, 1), gris_suave),
+                ("BACKGROUND", (0, 0), (-1, 1), violeta_fila_suave),
                 ("BACKGROUND", (0, 2), (-1, 2), verde_esmeralda),
-                ("GRID", (0, 0), (-1, -1), 0.5, gris_borde),
+                ("GRID", (0, 0), (-1, -1), 0.5, borde_violeta),
                 ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
                 ("LEFTPADDING", (0, 0), (-1, -1), 6),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 6),
@@ -447,7 +493,7 @@ def generar_pdf_propuesta(cotizacion_dict: dict[str, Any]) -> bytes:
     elementos.append(Spacer(1, 7 * mm))
 
     # 7. Pie de página institucional
-    elementos.append(HRFlowable(width="100%", thickness=0.6, color=gris_borde))
+    elementos.append(HRFlowable(width="100%", thickness=0.6, color=borde_violeta))
     elementos.append(Spacer(1, 2 * mm))
     elementos.append(
         Paragraph(

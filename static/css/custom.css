@@ -1,5 +1,5 @@
 /* 
- * Estilos SaaS Comerciales para CotizaSmart
+ * Estilos SaaS Comerciales para CotizaSmart (Paleta Morada Corporativa)
  * Trabajo 3 - Tecnología de la Información II, Universidad de Concepción (Campus Los Ángeles)
  * Autores: Jorge Campos, Benjamin Muñoz y Raul Vergara
  */
@@ -7,12 +7,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --brand-navy: #0f172a;
-  --brand-blue: #1e3a8a;
+  --brand-primary: #6D28D9;
+  --brand-primary-hover: #5B21B6;
+  --brand-primary-light: #7C3AED;
+  --brand-primary-accent: #A78BFA;
+  --brand-primary-deep: #4C1D95;
+  --brand-soft: #EDE9FE;
+  --brand-surface: #F5F3FF;
+  --brand-dark: #1E1033;
+  --brand-subtitle-dark: #C4B5FD;
+  --bg-page: #FAF9FF;
+  --text-primary: #1F1637;
+  --text-secondary: #6B6585;
+  --border-color: #E7E3F4;
   --brand-emerald: #059669;
-  --brand-amber: #d97706;
-  --brand-red: #dc2626;
-  --bg-page: #f8fafc;
+  --brand-amber: #D97706;
+  --brand-red: #DC2626;
+  --chart-cyan: #0891B2;
 }
 
 html,
@@ -25,12 +36,17 @@ body {
   overflow-x: hidden;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-page);
-  color: #0f172a;
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
 }
 
 .hidden {
   display: none !important;
+}
+
+/* Utilidades de paleta corporativa morada */
+.logo-rayo-gradiente {
+  background: linear-gradient(135deg, var(--brand-primary-light) 0%, var(--brand-primary-accent) 100%);
 }
 
 /* Estructura determinista pre-hidratación Tailwind CDN */
@@ -45,8 +61,8 @@ body {
 .app-sidebar {
   width: 16rem;
   flex-shrink: 0;
-  background-color: #0f172a;
-  color: #f1f5f9;
+  background-color: var(--brand-dark);
+  color: #FAF9FF;
   display: none;
   flex-direction: column;
   justify-content: space-between;
@@ -69,21 +85,21 @@ body {
   overflow-x: hidden;
 }
 
-/* Tarjetas SaaS con sombra suave y micro-transición */
+/* Tarjetas SaaS con sombra suave y borde #E7E3F4 */
 .saas-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   border-radius: 0.875rem;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+  box-shadow: 0 1px 3px rgba(30, 16, 51, 0.05), 0 1px 2px rgba(30, 16, 51, 0.03);
   transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
 }
 
 .saas-card-hover:hover {
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.07), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
-  border-color: #cbd5e1;
+  box-shadow: 0 10px 25px -5px rgba(109, 40, 217, 0.09), 0 8px 10px -6px rgba(30, 16, 51, 0.05);
+  border-color: var(--brand-primary-accent);
 }
 
-/* Semáforos suaves */
+/* Semáforos suaves (NO cambian a morado: verde #059669, ámbar #D97706, rojo #DC2626) */
 .semaforo-verde {
   background-color: #ecfdf5;
   color: #065f46;
@@ -118,15 +134,15 @@ body {
   left: 50%;
   transform: translateX(-50%) translateY(4px);
   width: 265px;
-  background-color: #0f172a;
-  color: #f8fafc;
+  background-color: var(--brand-dark);
+  color: #FAF9FF;
   text-align: left;
   padding: 0.65rem 0.8rem;
   border-radius: 0.5rem;
   font-size: 0.75rem;
   font-weight: 400;
   line-height: 1.4;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 15px -3px rgba(30, 16, 51, 0.35);
   z-index: 60;
   transition: opacity 0.16s ease, transform 0.16s ease;
   pointer-events: none;
@@ -140,7 +156,7 @@ body {
   margin-left: -5px;
   border-width: 5px;
   border-style: solid;
-  border-color: #0f172a transparent transparent transparent;
+  border-color: var(--brand-dark) transparent transparent transparent;
 }
 
 .tooltip-wrapper:hover .tooltip-box,
@@ -155,7 +171,7 @@ input[type="range"].saas-slider {
   -webkit-appearance: none;
   appearance: none;
   height: 8px;
-  background: #e2e8f0;
+  background: var(--border-color);
   border-radius: 999px;
   outline: none;
 }
@@ -166,16 +182,16 @@ input[type="range"].saas-slider::-webkit-slider-thumb {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #1e3a8a;
+  background: var(--brand-primary);
   border: 3px solid #ffffff;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.3);
+  box-shadow: 0 2px 6px rgba(30, 16, 51, 0.3);
   cursor: pointer;
   transition: transform 0.12s ease, background-color 0.12s ease;
 }
 
 input[type="range"].saas-slider::-webkit-slider-thumb:hover {
   transform: scale(1.12);
-  background: #059669;
+  background: var(--brand-primary-light);
 }
 
 /* Foco accesible */
@@ -184,7 +200,7 @@ select:focus-visible,
 textarea:focus-visible,
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid var(--brand-primary);
   outline-offset: 2px;
 }
 
@@ -194,12 +210,12 @@ a:focus-visible {
   height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--brand-surface);
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #C4B5FD;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--brand-primary-light);
 }

@@ -41,10 +41,10 @@ window.CotizaSmart = {
     if (!contenedor) return;
 
     const colores = {
-      exito: "bg-slate-900 border-emerald-500 text-white",
+      exito: "bg-brand-dark border-emerald-500 text-white",
       error: "bg-red-950 border-red-500 text-red-50",
       alerta: "bg-amber-950 border-amber-500 text-amber-50",
-      info: "bg-blue-950 border-blue-400 text-blue-50",
+      info: "bg-brand-dark border-brand-accent text-white",
     };
 
     const el = document.createElement("div");
