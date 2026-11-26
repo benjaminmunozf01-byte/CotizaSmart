@@ -6,24 +6,24 @@
 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
   <div>
     <div class="flex flex-wrap items-center gap-2.5 mb-1">
-      <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Panel de Control Comercial</h1>
+      <h1 class="text-2xl font-extrabold text-brand-text tracking-tight">Panel de Control Comercial</h1>
       {% if tiene_datos_demo %}
       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300">
         <i data-lucide="flask-conical" class="w-3.5 h-3.5"></i> Datos de demostración
       </span>
       {% endif %}
     </div>
-    <p class="text-sm text-slate-600">
+    <p class="text-sm text-brand-muted">
       Resumen de licitaciones eléctricas, riesgo de sobrecosto Montecarlo y rentabilidad esperada.
     </p>
   </div>
 
   <div class="flex flex-wrap items-center gap-2.5">
-    <a href="{{ url_for('ver_resultados', cot_id=cot_demo_id) }}" class="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-blue-950 border border-slate-300 text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-2xs transition-colors">
+    <a href="{{ url_for('ver_resultados', cot_id=cot_demo_id) }}" class="px-4 py-2.5 rounded-xl bg-white hover:bg-brand-surface text-brand-deep border border-brand-border text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-2xs transition-colors">
       <i data-lucide="sparkles" class="w-4 h-4 text-emerald-600"></i>
       <span>Ver Cotización Demo (120 m² Los Ángeles)</span>
     </a>
-    <a href="{{ url_for('nueva_cotizacion') }}" class="px-4 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-950 text-white text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors">
+    <a href="{{ url_for('nueva_cotizacion') }}" class="px-4 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-hover text-white text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors">
       <i data-lucide="plus" class="w-4 h-4"></i>
       <span>Nueva Cotización</span>
     </a>
@@ -35,17 +35,17 @@
   <!-- KPI 1: Cotizaciones del mes -->
   <div class="saas-card saas-card-hover p-5">
     <div class="flex items-center justify-between mb-3">
-      <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Cotizaciones del Mes</span>
-      <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-900 flex items-center justify-center">
+      <span class="text-xs font-semibold uppercase tracking-wider text-brand-muted">Cotizaciones del Mes</span>
+      <div class="w-9 h-9 rounded-xl bg-brand-soft text-brand-primary flex items-center justify-center">
         <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
       </div>
     </div>
     <div class="flex items-baseline gap-2">
-      <span class="text-3xl font-extrabold text-slate-900">{{ kpis.cotizaciones_mes }}</span>
-      <span class="text-xs font-medium text-slate-500">de {{ info_plan.limite_mes }} en Plan Gratis</span>
+      <span class="text-3xl font-extrabold text-brand-text">{{ kpis.cotizaciones_mes }}</span>
+      <span class="text-xs font-medium text-brand-muted">de {{ info_plan.limite_mes }} en Plan Gratis</span>
     </div>
-    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
-      <i data-lucide="layers" class="w-3.5 h-3.5 text-blue-700"></i>
+    <p class="text-xs text-brand-muted mt-2 flex items-center gap-1">
+      <i data-lucide="layers" class="w-3.5 h-3.5 text-brand-primary"></i>
       <span>{{ kpis.total_historico }} cotizaciones acumuladas en historial</span>
     </p>
   </div>
@@ -54,8 +54,8 @@
   <div class="saas-card saas-card-hover p-5">
     <div class="flex items-center justify-between mb-3">
       <div class="flex items-center gap-1.5">
-        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Margen Esperado Prom.</span>
-        <span class="tooltip-wrapper text-slate-400">
+        <span class="text-xs font-semibold uppercase tracking-wider text-brand-muted">Margen Esperado Prom.</span>
+        <span class="tooltip-wrapper text-brand-muted">
           <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
           <span class="tooltip-box">Porcentaje del precio ofertado que queda como ganancia neta promedio después de simular 10.000 escenarios de materiales, mermas, mano de obra y gastos generales.</span>
         </span>
@@ -68,7 +68,7 @@
       <span class="text-3xl font-extrabold text-emerald-700">{{ kpis.margen_esperado_promedio | pct }}</span>
       <span class="text-xs font-medium text-emerald-700">sobre precio neto</span>
     </div>
-    <p class="text-xs text-slate-500 mt-2">
+    <p class="text-xs text-brand-muted mt-2">
       Descontando mermas reales y costos indirectos
     </p>
   </div>
@@ -76,16 +76,16 @@
   <!-- KPI 3: Tasa de cotizaciones ganadas -->
   <div class="saas-card saas-card-hover p-5">
     <div class="flex items-center justify-between mb-3">
-      <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tasa Licitaciones Ganadas</span>
-      <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
+      <span class="text-xs font-semibold uppercase tracking-wider text-brand-muted">Tasa Licitaciones Ganadas</span>
+      <div class="w-9 h-9 rounded-xl bg-brand-soft text-brand-primary flex items-center justify-center">
         <i data-lucide="award" class="w-5 h-5"></i>
       </div>
     </div>
     <div class="flex items-baseline gap-2">
-      <span class="text-3xl font-extrabold text-slate-900">{{ kpis.tasa_ganadas | pct }}</span>
-      <span class="text-xs font-medium text-slate-500">({{ kpis.ganadas_count }} de {{ kpis.cerradas_count }} cerradas)</span>
+      <span class="text-3xl font-extrabold text-brand-text">{{ kpis.tasa_ganadas | pct }}</span>
+      <span class="text-xs font-medium text-brand-muted">({{ kpis.ganadas_count }} de {{ kpis.cerradas_count }} cerradas)</span>
     </div>
-    <p class="text-xs text-slate-500 mt-2">
+    <p class="text-xs text-brand-muted mt-2">
       Equilibrio entre competitividad y margen seguro
     </p>
   </div>
@@ -94,8 +94,8 @@
   <div class="saas-card saas-card-hover p-5">
     <div class="flex items-center justify-between mb-3">
       <div class="flex items-center gap-1.5">
-        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Riesgo Prom. de Pérdida</span>
-        <span class="tooltip-wrapper text-slate-400">
+        <span class="text-xs font-semibold uppercase tracking-wider text-brand-muted">Riesgo Prom. de Pérdida</span>
+        <span class="tooltip-wrapper text-brand-muted">
           <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
           <span class="tooltip-box">Probabilidad de que el costo real de la obra supere el precio cobrado al cliente. Bajo 10% es zona verde segura.</span>
         </span>
@@ -108,9 +108,9 @@
       <span class="text-3xl font-extrabold {% if kpis.riesgo_promedio < 10 %}text-emerald-700{% elif kpis.riesgo_promedio <= 25 %}text-amber-700{% else %}text-red-700{% endif %}">
         {{ kpis.riesgo_promedio | pct }}
       </span>
-      <span class="text-xs font-medium text-slate-500">prob. sobrecosto</span>
+      <span class="text-xs font-medium text-brand-muted">prob. sobrecosto</span>
     </div>
-    <p class="text-xs text-slate-500 mt-2">
+    <p class="text-xs text-brand-muted mt-2">
       Meta recomendada por CotizaSmart: &le; 10,0%
     </p>
   </div>
@@ -122,10 +122,10 @@
   <div class="saas-card p-5 lg:col-span-2 flex flex-col justify-between">
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h2 class="text-base font-bold text-slate-900">Distribución de Cotizaciones por Estado Comercial</h2>
-        <p class="text-xs text-slate-500">Seguimiento del embudo de obras eléctricas cotizadas</p>
+        <h2 class="text-base font-bold text-brand-text">Distribución de Cotizaciones por Estado Comercial</h2>
+        <p class="text-xs text-brand-muted">Seguimiento del embudo de obras eléctricas cotizadas</p>
       </div>
-      <a href="{{ url_for('historial_calibracion') }}" class="text-xs font-semibold text-blue-900 hover:underline flex items-center gap-1">
+      <a href="{{ url_for('historial_calibracion') }}" class="text-xs font-semibold text-brand-primary hover:underline flex items-center gap-1">
         <span>Gestionar estados</span>
         <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
       </a>
@@ -139,52 +139,53 @@
           <span class="text-xs font-semibold text-emerald-900 flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span> Ganadas
           </span>
-          <span class="text-sm font-bold text-emerald-950">{{ conteo_estados.ganada }} obras</span>
+          <span class="text-sm font-bold text-emerald-950">{{ conteo_estados.ganada }} {{ 'obra' if conteo_estados.ganada == 1 else 'obras' }}</span>
         </div>
-        <div class="p-3 rounded-xl bg-blue-50/70 border border-blue-200 flex items-center justify-between">
-          <span class="text-xs font-semibold text-blue-900 flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-blue-700"></span> Enviadas a cliente
+        <div class="p-3 rounded-xl bg-brand-soft/80 border border-brand-border flex items-center justify-between">
+          <span class="text-xs font-semibold text-brand-deep flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-brand-light"></span> Enviadas a cliente
           </span>
-          <span class="text-sm font-bold text-blue-950">{{ conteo_estados.enviada }} obras</span>
+          <span class="text-sm font-bold text-brand-text">{{ conteo_estados.enviada }} {{ 'obra' if conteo_estados.enviada == 1 else 'obras' }}</span>
         </div>
-        <div class="p-3 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-between">
-          <span class="text-xs font-semibold text-slate-700 flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-slate-500"></span> En borrador
+        <div class="p-3 rounded-xl bg-brand-surface border border-brand-border flex items-center justify-between">
+          <span class="text-xs font-semibold text-brand-text flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-brand-muted"></span> En borrador
           </span>
-          <span class="text-sm font-bold text-slate-900">{{ conteo_estados.borrador }} obras</span>
+          <span class="text-sm font-bold text-brand-text">{{ conteo_estados.borrador }} {{ 'obra' if conteo_estados.borrador == 1 else 'obras' }}</span>
         </div>
         <div class="p-3 rounded-xl bg-red-50/70 border border-red-200 flex items-center justify-between">
           <span class="text-xs font-semibold text-red-900 flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Perdidas
+            <span class="w-2.5 h-2.5 rounded-full bg-red-600"></span> Perdidas
           </span>
-          <span class="text-sm font-bold text-red-950">{{ conteo_estados.perdida }} obras</span>
+          <span class="text-sm font-bold text-red-950">{{ conteo_estados.perdida }} {{ 'obra' if conteo_estados.perdida == 1 else 'obras' }}</span>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Contador Plan Gratuito + Acceso rápido Demo -->
-  <div class="saas-card p-5 flex flex-col justify-between bg-gradient-to-b from-white to-slate-50/90">
+  <div class="saas-card p-5 flex flex-col justify-between bg-gradient-to-b from-white to-brand-surface/80">
     <div>
       <div class="flex items-center justify-between mb-3">
-        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-900">Plan Gratuito Activo</span>
-        <span class="text-xs font-semibold text-slate-500">Ciclo Mensual</span>
+        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-brand-soft text-brand-deep">Plan Gratuito Activo</span>
+        <span class="text-xs font-semibold text-brand-muted">Ciclo Mensual</span>
       </div>
-      <h3 class="text-lg font-extrabold text-slate-900 mb-1">{{ info_plan.texto_contador }}</h3>
-      <p class="text-xs text-slate-600 mb-4">
+      <h3 class="text-lg font-extrabold text-brand-text mb-1">{{ info_plan.texto_contador }}</h3>
+      <p class="text-xs text-brand-muted mb-4">
         Te queda <strong>{{ info_plan.restantes }} cotización disponible</strong> este mes antes de requerir el Plan Pro ($49.000 CLP/mes).
       </p>
-      <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden mb-4">
+      <div class="w-full h-3 bg-brand-soft rounded-full overflow-hidden mb-4">
         <div class="h-full rounded-full {% if info_plan.bloqueado %}bg-red-600{% elif info_plan.usadas_mes == 2 %}bg-amber-500{% else %}bg-emerald-600{% endif %}" style="width: {{ info_plan.porcentaje_uso }}%"></div>
       </div>
 
-      <div class="p-3.5 rounded-xl bg-blue-950 text-white space-y-2 mb-4">
+      <!-- Bloque oscuro Caso Estrella Precargado (#1E1033) -->
+      <div class="p-3.5 rounded-xl bg-brand-dark text-white space-y-2 mb-4">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] uppercase tracking-wider font-bold text-emerald-400">Caso Estrella Precargado</span>
-          <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-slate-200">Datos de demostración</span>
+          <span class="text-[11px] uppercase tracking-wider font-bold text-brand-subtitle">Caso Estrella Precargado</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-brand-subtitle">Datos de demostración</span>
         </div>
-        <p class="text-xs font-semibold leading-snug">Instalación eléctrica local comercial 120 m² - Los Ángeles</p>
-        <p class="text-[11px] text-slate-300 leading-relaxed">
+        <p class="text-xs font-semibold leading-snug text-white">Instalación eléctrica local comercial 120 m² - Los Ángeles</p>
+        <p class="text-[11px] text-brand-subtitle leading-relaxed">
           Compara el precio ingenuo (Costo + 20% &rarr; <span class="text-amber-300 font-semibold">Riesgo Amarillo 12,5%</span>) contra el Precio Óptimo CotizaSmart (<span class="text-emerald-300 font-semibold">Verde 7,5%</span>).
         </p>
         <a href="{{ url_for('ver_resultados', cot_id=cot_demo_id) }}" class="mt-1 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300">
@@ -195,10 +196,10 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <a href="{{ url_for('planes_precios') }}" class="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold text-center transition-colors">
+      <a href="{{ url_for('planes_precios') }}" class="flex-1 py-2.5 px-3 rounded-xl bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold text-center transition-colors">
         Ver Plan Pro ($49.000/mes)
       </a>
-      <button type="button" onclick="CotizaSmart.restablecerDatosDemo()" class="py-2.5 px-3 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold" title="Restablecer a 2 de 3 cotizaciones usadas este mes">
+      <button type="button" onclick="CotizaSmart.restablecerDatosDemo()" class="py-2.5 px-3 rounded-xl border border-brand-border hover:bg-brand-surface text-brand-text text-xs font-semibold" title="Restablecer a 2 de 3 cotizaciones usadas este mes">
         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
       </button>
     </div>
@@ -207,12 +208,12 @@
 
 <!-- Tabla de cotizaciones recientes con semáforo -->
 <div class="saas-card overflow-hidden">
-  <div class="px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+  <div class="px-6 py-4 border-b border-brand-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
     <div>
-      <h2 class="text-base font-bold text-slate-900">Cotizaciones Recientes y Semáforo de Riesgo</h2>
-      <p class="text-xs text-slate-500">Verde: prob. de pérdida &lt; 10% · Amarillo: 10% a 25% · Rojo: &gt; 25%</p>
+      <h2 class="text-base font-bold text-brand-text">Cotizaciones Recientes y Semáforo de Riesgo</h2>
+      <p class="text-xs text-brand-muted">Verde: prob. de pérdida &lt; 10% · Amarillo: 10% a 25% · Rojo: &gt; 25%</p>
     </div>
-    <a href="{{ url_for('historial_calibracion') }}" class="text-xs font-semibold text-blue-900 hover:underline">
+    <a href="{{ url_for('historial_calibracion') }}" class="text-xs font-semibold text-brand-primary hover:underline">
       Ver historial completo &rarr;
     </a>
   </div>
@@ -220,7 +221,7 @@
   <div class="overflow-x-auto">
     <table class="w-full text-left border-collapse">
       <thead>
-        <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+        <tr class="bg-brand-surface border-b border-brand-border text-[11px] font-bold uppercase tracking-wider text-brand-muted">
           <th class="py-3 px-4">Código / Fecha</th>
           <th class="py-3 px-4">Proyecto y Cliente</th>
           <th class="py-3 px-4">Estado</th>
@@ -230,16 +231,16 @@
           <th class="py-3 px-4 text-right">Acciones</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-slate-200 text-xs">
+      <tbody class="divide-y divide-brand-border text-xs">
         {% for c in cotizaciones_recientes %}
-        <tr class="hover:bg-slate-50/90 transition-colors">
+        <tr class="hover:bg-brand-surface/70 transition-colors">
           <td class="py-3.5 px-4 whitespace-nowrap">
-            <span class="font-bold text-slate-900 block">{{ c.codigo }}</span>
-            <span class="text-slate-500">{{ c.fecha_creacion }}</span>
+            <span class="font-bold text-brand-text block">{{ c.codigo }}</span>
+            <span class="text-brand-muted">{{ c.fecha_creacion }}</span>
           </td>
           <td class="py-3.5 px-4">
             <div class="flex flex-wrap items-center gap-1.5">
-              <a href="{{ url_for('ver_resultados', cot_id=c.id) }}" class="font-bold text-slate-900 hover:text-blue-900">
+              <a href="{{ url_for('ver_resultados', cot_id=c.id) }}" class="font-bold text-brand-text hover:text-brand-primary">
                 {{ c.nombre }}
               </a>
               {% if c.es_demo %}
@@ -248,25 +249,25 @@
               </span>
               {% endif %}
             </div>
-            <span class="text-slate-500 block mt-0.5">{{ c.cliente }} · {{ c.ciudad }} ({{ c.superficie_m2 | int }} m²)</span>
+            <span class="text-brand-muted block mt-0.5">{{ c.cliente }} · {{ c.ciudad }} ({{ c.superficie_m2 | int }} m²)</span>
           </td>
           <td class="py-3.5 px-4 whitespace-nowrap">
             {% if c.estado == 'ganada' %}
             <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800">Ganada</span>
             {% elif c.estado == 'enviada' %}
-            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800">Enviada</span>
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-brand-soft text-brand-deep">Enviada</span>
             {% elif c.estado == 'perdida' %}
             <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-100 text-red-800">Perdida</span>
             {% else %}
-            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700">Borrador</span>
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-brand-surface text-brand-muted border border-brand-border">Borrador</span>
             {% endif %}
           </td>
-          <td class="py-3.5 px-4 text-right font-medium text-slate-700 whitespace-nowrap">
+          <td class="py-3.5 px-4 text-right font-medium text-brand-text whitespace-nowrap">
             {{ c.costo_esperado_clp | clp }}
           </td>
-          <td class="py-3.5 px-4 text-right font-bold text-slate-900 whitespace-nowrap">
+          <td class="py-3.5 px-4 text-right font-bold text-brand-text whitespace-nowrap">
             {{ c.precio_ofertado_clp | clp }}
-            <span class="block text-[10px] font-normal text-slate-500">Margen: {{ c.margen_esperado_pct | pct }}</span>
+            <span class="block text-[10px] font-normal text-brand-muted">Margen: {{ c.margen_esperado_pct | pct }}</span>
           </td>
           <td class="py-3.5 px-4 text-center whitespace-nowrap">
             {% if c.semaforo == 'verde' %}
@@ -288,13 +289,13 @@
           </td>
           <td class="py-3.5 px-4 text-right whitespace-nowrap">
             <div class="inline-flex items-center gap-1.5">
-              <a href="{{ url_for('ver_resultados', cot_id=c.id) }}" class="px-2.5 py-1.5 rounded-lg bg-blue-900 hover:bg-blue-950 text-white font-semibold" title="Ver simulación y curva óptima">
+              <a href="{{ url_for('ver_resultados', cot_id=c.id) }}" class="px-2.5 py-1.5 rounded-lg bg-brand-primary hover:bg-brand-hover text-white font-semibold" title="Ver simulación y curva óptima">
                 Resultados
               </a>
-              <a href="{{ url_for('editar_cotizacion', cot_id=c.id) }}" class="p-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700" title="Editar partidas">
+              <a href="{{ url_for('editar_cotizacion', cot_id=c.id) }}" class="p-1.5 rounded-lg border border-brand-border hover:bg-brand-surface text-brand-text" title="Editar partidas">
                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
               </a>
-              <a href="{{ url_for('descargar_pdf_propuesta', cot_id=c.id) }}" class="p-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700" title="Descargar PDF">
+              <a href="{{ url_for('descargar_pdf_propuesta', cot_id=c.id) }}" class="p-1.5 rounded-lg border border-brand-border hover:bg-brand-surface text-brand-text" title="Descargar PDF">
                 <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
               </a>
             </div>
@@ -327,7 +328,7 @@
               datosEstados.borrador || 0,
               datosEstados.perdida || 0,
             ],
-            backgroundColor: ["#059669", "#1d4ed8", "#64748b", "#ef4444"],
+            backgroundColor: ["#059669", "#7C3AED", "#6B6585", "#DC2626"],
             borderRadius: 8,
             barThickness: 36,
           },
@@ -341,7 +342,7 @@
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (context) => ` ${context.parsed.y} cotizaciones`,
+              label: (context) => ` ${context.parsed.y} ${context.parsed.y === 1 ? "cotización" : "cotizaciones"}`,
             },
           },
         },
@@ -349,7 +350,7 @@
           y: {
             beginAtZero: true,
             ticks: { stepSize: 1, precision: 0 },
-            grid: { color: "#f1f5f9" },
+            grid: { color: "#F5F3FF" },
           },
           x: {
             grid: { display: false },

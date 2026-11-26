@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}CotizaSmart — Cotizador de Obras con Riesgo Medido{% endblock %}</title>
-  <!-- Tailwind CSS CDN -->
+  <!-- Favicon SVG con gradiente morado (#7C3AED a #A78BFA) -->
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('favicon') }}" />
+  <!-- Tailwind CSS CDN con paleta morada centralizada -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -12,9 +14,23 @@
         extend: {
           colors: {
             brand: {
-              navy: '#0f172a',
-              blue: '#1e3a8a',
+              primary: '#6D28D9',
+              hover: '#5B21B6',
+              light: '#7C3AED',
+              accent: '#A78BFA',
+              deep: '#4C1D95',
+              soft: '#EDE9FE',
+              surface: '#F5F3FF',
+              dark: '#1E1033',
+              subtitle: '#C4B5FD',
+              page: '#FAF9FF',
+              text: '#1F1637',
+              muted: '#6B6585',
+              border: '#E7E3F4',
               emerald: '#059669',
+              amber: '#D97706',
+              red: '#DC2626',
+              cyan: '#0891B2'
             }
           },
           fontFamily: {
@@ -30,63 +46,63 @@
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}" />
 </head>
-<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+<body class="min-h-screen flex flex-col bg-brand-page text-brand-text">
 
   <!-- Contenedor de notificaciones Toast -->
   <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
 
   <!-- Overlay de carga con spinner para simulación Montecarlo -->
-  <div id="loading-overlay" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 px-7 py-6 max-w-sm w-full flex flex-col items-center text-center">
-      <div class="w-12 h-12 rounded-full border-4 border-slate-200 border-t-blue-900 animate-spin mb-4"></div>
-      <p id="loading-overlay-text" class="text-sm font-semibold text-slate-900">Simulando 10.000 escenarios Montecarlo...</p>
-      <p class="text-xs text-slate-500 mt-1">Muestreo PERT vectorizado y curva de precio óptimo</p>
+  <div id="loading-overlay" class="hidden fixed inset-0 z-50 bg-brand-dark/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-brand-border px-7 py-6 max-w-sm w-full flex flex-col items-center text-center">
+      <div class="w-12 h-12 rounded-full border-4 border-brand-soft border-t-brand-primary animate-spin mb-4"></div>
+      <p id="loading-overlay-text" class="text-sm font-semibold text-brand-text">Simulando 10.000 escenarios Montecarlo...</p>
+      <p class="text-xs text-brand-muted mt-1">Muestreo PERT vectorizado y curva de precio óptimo</p>
     </div>
   </div>
 
   <!-- Modal Plan Pro ($49.000 CLP/mes) -->
-  <div id="modal-plan-pro" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-plan-pro" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden">
-      <div class="bg-slate-900 px-6 py-5 text-white flex items-center justify-between">
+  <div id="modal-plan-pro" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-plan-pro" class="hidden fixed inset-0 z-50 bg-brand-dark/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-brand-border max-w-lg w-full overflow-hidden">
+      <div class="bg-brand-dark px-6 py-5 text-white flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400">
+          <div class="w-10 h-10 rounded-xl bg-brand-primary/30 border border-brand-subtitle/40 flex items-center justify-center text-brand-subtitle">
             <i data-lucide="sparkles" class="w-5 h-5"></i>
           </div>
           <div>
-            <span class="text-xs uppercase tracking-wider font-semibold text-emerald-400">CotizaSmart Pro</span>
-            <h3 id="titulo-modal-plan-pro" class="text-lg font-bold">Desbloquea Cotizaciones Ilimitadas</h3>
+            <span class="text-xs uppercase tracking-wider font-semibold text-brand-subtitle">CotizaSmart Pro</span>
+            <h3 id="titulo-modal-plan-pro" class="text-lg font-bold">Amplía tu Capacidad de Cotización</h3>
           </div>
         </div>
-        <button id="btn-modal-pro-x" type="button" onclick="CotizaSmart.cerrarModalPlanPro()" class="text-slate-400 hover:text-white">
+        <button id="btn-modal-pro-x" type="button" onclick="CotizaSmart.cerrarModalPlanPro()" class="text-brand-subtitle hover:text-white">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <div class="p-6 space-y-4">
         <div id="modal-plan-pro-motivo" class="hidden p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium"></div>
-        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-baseline justify-between">
+        <div class="p-4 rounded-xl bg-brand-surface border border-brand-border flex items-baseline justify-between">
           <div>
-            <p class="text-sm font-semibold text-slate-900">Suscripción Mensual Plan Pro</p>
-            <p class="text-xs text-slate-500">Facturación electrónica SII · Sin contrato de permanencia</p>
+            <p class="text-sm font-semibold text-brand-text">Suscripción Mensual Plan Pro</p>
+            <p class="text-xs text-brand-muted">Facturación electrónica SII · Sin contrato de permanencia</p>
           </div>
           <div class="text-right">
-            <span class="text-2xl font-extrabold text-blue-950">$49.000</span>
-            <span class="text-xs text-slate-500 block">CLP + IVA / mes</span>
+            <span class="text-2xl font-extrabold text-brand-primary">$49.000</span>
+            <span class="text-xs text-brand-muted block">CLP + IVA / mes</span>
           </div>
         </div>
-        <ul class="space-y-2 text-xs text-slate-700">
-          <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i> Cotizaciones Montecarlo ilimitadas para todo tu equipo técnico.</li>
+        <ul class="space-y-2 text-xs text-brand-text">
+          <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i> Hasta 30 cotizaciones Montecarlo al mes para tu equipo técnico.</li>
           <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i> Calibración avanzada con historial propio y licitaciones de competencia.</li>
           <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i> Ajuste dinámico correlacionado de Cobre y Dólar en tiempo real.</li>
           <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i> Propuestas comerciales PDF con tu propio logo y marca corporativa.</li>
         </ul>
-        <div class="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-950 text-xs leading-relaxed">
+        <div class="p-3.5 rounded-xl bg-brand-soft border border-brand-border text-brand-text text-xs leading-relaxed">
           <strong>Modo Demostración (Pitch Inversionistas):</strong> Esta ventana es una vitrina comercial del modelo de monetización SaaS B2B de CotizaSmart. Si alcanzaste el límite de 3 cotizaciones en la prueba en vivo, puedes restablecer el contador de demostración con un clic abajo.
         </div>
         <div class="flex flex-wrap items-center justify-end gap-2.5 pt-2">
-          <button type="button" onclick="CotizaSmart.restablecerDatosDemo()" class="px-3.5 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold flex items-center gap-1.5">
+          <button type="button" onclick="CotizaSmart.restablecerDatosDemo()" class="px-3.5 py-2 rounded-xl border border-brand-border text-brand-text hover:bg-brand-surface text-xs font-semibold flex items-center gap-1.5">
             <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Restablecer demo (2 de 3)
           </button>
-          <button type="button" onclick="CotizaSmart.cerrarModalPlanPro(); CotizaSmart.mostrarToast('Solicitud de Plan Pro registrada en modo demostración.', 'exito');" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold">
+          <button type="button" onclick="CotizaSmart.cerrarModalPlanPro(); CotizaSmart.mostrarToast('Solicitud de Plan Pro registrada en modo demostración.', 'exito');" class="px-4 py-2 rounded-xl bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold">
             Entendido (Demo)
           </button>
         </div>
@@ -95,51 +111,51 @@
   </div>
 
   <!-- Barra superior móvil -->
-  <header class="lg:hidden bg-slate-900 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+  <header class="lg:hidden bg-brand-dark text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40">
     <a href="{{ url_for('panel_inicio') }}" class="flex items-center gap-2.5">
-      <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950 font-black">
+      <div class="w-8 h-8 rounded-lg logo-rayo-gradiente flex items-center justify-center text-brand-dark font-black shadow-xs">
         <i data-lucide="zap" class="w-4 h-4"></i>
       </div>
       <div>
-        <span class="font-bold tracking-tight text-base">CotizaSmart</span>
-        <span class="block text-[10px] text-slate-400 -mt-1">Riesgo Medido · Chile</span>
+        <span class="font-bold tracking-tight text-base text-white">CotizaSmart</span>
+        <span class="block text-[10px] text-brand-subtitle -mt-1">Ingeniería &amp; Montecarlo</span>
       </div>
     </a>
-    <button type="button" onclick="document.getElementById('sidebar-nav').classList.toggle('hidden')" class="p-2 rounded-lg bg-slate-800 text-slate-200" aria-label="Abrir menú">
+    <button type="button" onclick="document.getElementById('sidebar-nav').classList.toggle('hidden')" class="p-2 rounded-lg bg-white/10 text-white" aria-label="Abrir menú">
       <i data-lucide="menu" class="w-5 h-5"></i>
     </button>
   </header>
 
   <div class="flex-1 flex app-shell">
-    <!-- Navegación lateral fija -->
-    <aside id="sidebar-nav" class="app-sidebar hidden lg:flex w-64 bg-slate-900 text-slate-100 flex-col justify-between shrink-0">
+    <!-- Navegación lateral fija (#1E1033) -->
+    <aside id="sidebar-nav" class="app-sidebar hidden lg:flex w-64 bg-brand-dark text-white flex-col justify-between shrink-0">
       <div>
-        <!-- Logo CotizaSmart -->
-        <div class="px-6 py-5 border-b border-slate-800 flex items-center justify-between">
+        <!-- Logo CotizaSmart: rayo con gradiente morado (#7C3AED a #A78BFA) y subtítulo en #C4B5FD -->
+        <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between">
           <a href="{{ url_for('panel_inicio') }}" class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-slate-950 shadow-md">
+            <div class="w-9 h-9 rounded-xl logo-rayo-gradiente flex items-center justify-center text-brand-dark shadow-md">
               <i data-lucide="zap" class="w-5 h-5 stroke-[2.5]"></i>
             </div>
             <div>
               <span class="font-extrabold tracking-tight text-lg text-white block leading-none">CotizaSmart</span>
-              <span class="text-[11px] text-emerald-400 font-medium">Ingeniería &amp; Montecarlo</span>
+              <span class="text-[11px] text-brand-subtitle font-medium">Ingeniería &amp; Montecarlo</span>
             </div>
           </a>
         </div>
 
         <!-- Menú de 7 pantallas -->
         <nav class="px-3 py-4 space-y-1 text-sm" aria-label="Navegación principal">
-          <a href="{{ url_for('panel_inicio') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'panel' %}bg-blue-900/80 text-white shadow-xs{% else %}text-slate-300 hover:bg-slate-800/70 hover:text-white{% endif %}">
+          <a href="{{ url_for('panel_inicio') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'panel' %}bg-brand-primary text-white shadow-xs{% else %}text-brand-subtitle hover:bg-white/10 hover:text-white{% endif %}">
             <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
             <span>1. Panel de Inicio</span>
           </a>
 
-          <a href="{{ url_for('nueva_cotizacion') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'nueva' %}bg-blue-900/80 text-white shadow-xs{% else %}text-slate-300 hover:bg-slate-800/70 hover:text-white{% endif %}">
+          <a href="{{ url_for('nueva_cotizacion') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'nueva' %}bg-brand-primary text-white shadow-xs{% else %}text-brand-subtitle hover:bg-white/10 hover:text-white{% endif %}">
             <i data-lucide="file-plus-2" class="w-4 h-4"></i>
             <span>2. Nueva Cotización</span>
           </a>
 
-          <a href="{{ url_for('ver_resultados', cot_id=cot_demo_id) }}" class="flex items-center justify-between px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'resultados' %}bg-blue-900/80 text-white shadow-xs{% else %}text-slate-300 hover:bg-slate-800/70 hover:text-white{% endif %}">
+          <a href="{{ url_for('ver_resultados', cot_id=cot_demo_id) }}" class="flex items-center justify-between px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'resultados' %}bg-brand-primary text-white shadow-xs{% else %}text-brand-subtitle hover:bg-white/10 hover:text-white{% endif %}">
             <span class="flex items-center gap-3">
               <i data-lucide="line-chart" class="w-4 h-4 text-emerald-400"></i>
               <span>3. Resultados</span>
@@ -147,22 +163,22 @@
             <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-semibold">Estrella</span>
           </a>
 
-          <a href="{{ url_for('historial_calibracion') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'historial' %}bg-blue-900/80 text-white shadow-xs{% else %}text-slate-300 hover:bg-slate-800/70 hover:text-white{% endif %}">
+          <a href="{{ url_for('historial_calibracion') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'historial' %}bg-brand-primary text-white shadow-xs{% else %}text-brand-subtitle hover:bg-white/10 hover:text-white{% endif %}">
             <i data-lucide="sliders" class="w-4 h-4"></i>
             <span>4. Historial y Calibración</span>
           </a>
 
-          <a href="{{ url_for('propuesta_comercial', cot_id=cot_demo_id) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'propuesta' %}bg-blue-900/80 text-white shadow-xs{% else %}text-slate-300 hover:bg-slate-800/70 hover:text-white{% endif %}">
+          <a href="{{ url_for('propuesta_comercial', cot_id=cot_demo_id) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'propuesta' %}bg-brand-primary text-white shadow-xs{% else %}text-brand-subtitle hover:bg-white/10 hover:text-white{% endif %}">
             <i data-lucide="file-text" class="w-4 h-4"></i>
             <span>5. Propuesta Comercial</span>
           </a>
 
-          <a href="{{ url_for('planes_precios') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'planes' %}bg-blue-900/80 text-white shadow-xs{% else %}text-slate-300 hover:bg-slate-800/70 hover:text-white{% endif %}">
+          <a href="{{ url_for('planes_precios') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'planes' %}bg-brand-primary text-white shadow-xs{% else %}text-brand-subtitle hover:bg-white/10 hover:text-white{% endif %}">
             <i data-lucide="credit-card" class="w-4 h-4"></i>
             <span>6. Planes</span>
           </a>
 
-          <a href="{{ url_for('hoja_de_ruta') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'hoja_ruta' %}bg-blue-900/80 text-white shadow-xs{% else %}text-slate-300 hover:bg-slate-800/70 hover:text-white{% endif %}">
+          <a href="{{ url_for('hoja_de_ruta') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors {% if pagina_activa == 'hoja_ruta' %}bg-brand-primary text-white shadow-xs{% else %}text-brand-subtitle hover:bg-white/10 hover:text-white{% endif %}">
             <i data-lucide="compass" class="w-4 h-4"></i>
             <span>7. Hoja de Ruta</span>
           </a>
@@ -170,24 +186,24 @@
       </div>
 
       <!-- Contador Plan Gratuito + Botón discreto Restablecer Demo -->
-      <div class="p-4 border-t border-slate-800 space-y-3">
-        <div class="p-3.5 rounded-xl bg-slate-800/90 border border-slate-700/80">
+      <div class="p-4 border-t border-white/10 space-y-3">
+        <div class="p-3.5 rounded-xl bg-white/5 border border-white/10">
           <div class="flex items-center justify-between text-xs mb-1.5">
             <span class="font-semibold text-white">Plan Gratuito</span>
             <span class="px-1.5 py-0.5 rounded text-[10px] font-bold {% if info_plan.bloqueado %}bg-red-500/20 text-red-300{% else %}bg-emerald-500/20 text-emerald-300{% endif %}">
               {{ info_plan.usadas_mes }}/{{ info_plan.limite_mes }}
             </span>
           </div>
-          <p id="sidebar-plan-counter" class="text-[11px] text-slate-300 mb-2">{{ info_plan.texto_contador }}</p>
-          <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden mb-2.5">
+          <p id="sidebar-plan-counter" class="text-[11px] text-brand-subtitle mb-2">{{ info_plan.texto_contador }}</p>
+          <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-2.5">
             <div class="h-full rounded-full transition-all duration-300 {% if info_plan.bloqueado %}bg-red-500{% elif info_plan.usadas_mes == 2 %}bg-amber-400{% else %}bg-emerald-500{% endif %}" style="width: {{ info_plan.porcentaje_uso }}%"></div>
           </div>
-          <a href="{{ url_for('planes_precios') }}" class="block w-full text-center py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-colors">
+          <a href="{{ url_for('planes_precios') }}" class="block w-full text-center py-1.5 px-2 rounded-lg bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold transition-colors">
             Subir a Plan Pro ($49.000)
           </a>
         </div>
 
-        <button id="btn-reset-demo-sidebar" type="button" onclick="CotizaSmart.restablecerDatosDemo()" class="w-full py-1.5 px-2.5 rounded-lg border border-slate-700 hover:border-slate-600 text-slate-400 hover:text-slate-200 text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors" title="Vuelve al estado inicial con 2 de 3 cotizaciones usadas este mes">
+        <button id="btn-reset-demo-sidebar" type="button" onclick="CotizaSmart.restablecerDatosDemo()" class="w-full py-1.5 px-2.5 rounded-lg border border-white/15 hover:border-brand-subtitle/50 text-brand-subtitle hover:text-white text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors" title="Vuelve al estado inicial con 2 de 3 cotizaciones usadas este mes">
           <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
           <span>Restablecer datos de demostración</span>
         </button>
@@ -201,9 +217,9 @@
       </main>
 
       <!-- Pie de página institucional requerido -->
-      <footer class="bg-white border-t border-slate-200 px-6 py-4 mt-8">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
-          <p class="font-medium text-slate-600">
+      <footer class="bg-white border-t border-brand-border px-6 py-4 mt-8">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-brand-muted">
+          <p class="font-medium text-brand-text">
             CotizaSmart - Proyecto TI II, Universidad de Concepción, Campus Los Ángeles. Jorge Campos, Benjamin Muñoz, Raul Vergara
           </p>
           <div class="flex items-center gap-3">
